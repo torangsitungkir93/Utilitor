@@ -1,0 +1,1 @@
+{"name":"utilitor","private":true,"scripts":{"deploy":"node release.js","deploy:minor":"node release.js minor","deploy:major":"node release.js major"}}
