@@ -157,6 +157,75 @@ input[type=range]{padding:0;border:0;background:transparent;accent-color:var(--p
 .md th,.md td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
 .md th{background:var(--card2)}
 .md a{color:var(--p)}
+/* ===== tampilan kompak ===== */
+body{font-size:14px;line-height:1.45}
+button{padding:5px 10px;font-size:13px;border-radius:8px}
+button svg{width:14px;height:14px;vertical-align:-2px}
+button.icon{width:30px;height:30px;font-size:15px}
+input,textarea{padding:7px 10px;border-radius:9px;font-size:14px}
+textarea{min-height:68px}
+#app{grid-template-columns:220px minmax(0,1fr)}
+#side{padding:12px 10px;gap:10px}
+.brand img{width:28px;height:28px;border-radius:8px}.brand h1{font-size:18px}
+.citem{padding:6px 10px;border-radius:9px}.cp{font-size:12px}.ct{font-size:13.5px}
+.sfoot{gap:8px;padding-top:8px}
+#chatview{height:100dvh;display:flex;flex-direction:column}
+header{position:static;flex:none;padding:7px 12px;background:none}
+header h2{font-size:17px}
+main{flex:1;min-height:0;overflow:auto;width:100%;max-width:1200px;margin:0 auto;padding:2px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.box{flex:none;padding:8px;gap:6px;border-radius:14px}
+.row{gap:6px}
+#st{font-size:12.5px;min-height:0;color:var(--mute)}#st:empty{display:none}
+.tawrap{position:relative}
+.tawrap textarea{display:block;padding-right:72px}
+.tabtns{position:absolute;top:4px;right:5px;display:flex;gap:2px}
+.prow{display:flex;gap:8px;align-items:flex-start}
+#prev{max-height:84px;max-width:min(180px,60%);object-fit:contain;border-radius:8px;margin:0}
+.pacts{display:flex;gap:2px;flex-wrap:wrap}
+.ib{width:26px;height:26px;padding:0;display:inline-grid;place-items:center;border-radius:7px;background:transparent;border-color:transparent;color:var(--mute)}
+.ib:hover{background:var(--card2);color:var(--ink);border-color:var(--line);transform:none}
+.ib svg{width:15px;height:15px;vertical-align:0}
+.ib.on{color:var(--p);background:var(--p-bg)}
+.ib.del{color:var(--mute)}.ib.del:hover{color:var(--danger)}
+.ib:disabled{opacity:.4}
+.empty{margin-top:24px}
+/* daftar pesan: dua kolom */
+#list{flex:1;min-height:260px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:8px}
+.mcol{display:flex;flex-direction:column;gap:6px;min-height:0;min-width:0}
+#colL{overflow:hidden}#colL.sc{overflow-y:auto}
+#colR{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding-right:2px}
+.msg{flex:none;margin:0;padding:7px 10px 8px 12px;border-radius:12px;gap:5px}
+.msg::before{width:3px}
+.msg:hover{transform:none;box-shadow:none;border-color:color-mix(in srgb,var(--p) 40%,var(--line))}
+.meta{font-size:11.5px;gap:6px}
+.tag{padding:1px 8px;font-size:11px}
+.acts{margin-left:auto;display:flex;gap:1px}
+.pic{max-height:190px;object-fit:contain;cursor:zoom-in;border-radius:8px}
+.pic.big{max-height:none;cursor:zoom-out}
+.pic.loading{height:90px}
+.md h1{font-size:1.25em}.md h2{font-size:1.15em}.md h3{font-size:1.06em}
+.cb code{font-size:12px}
+.cbar{padding:2px 4px 2px 10px;font-size:11px}
+/* editor */
+.seg .on[data-m]{background:var(--p);color:var(--on);border-color:var(--p)}
+.edbar{padding:8px 12px}.edbar h2{font-size:16px}
+#edstage{padding:8px}
+.edtools{gap:7px;padding:9px 12px}
+.edtools .ib{border-color:var(--line);background:var(--card);width:30px;height:30px}
+.edhint{font-size:12px;line-height:1.35}
+#edtxt{min-height:60px}
+#edmarks{position:absolute;inset:0;pointer-events:none}
+.mk{position:absolute;border:2px solid #e5322d;background:rgba(229,50,45,.12);border-radius:2px}
+.mk[data-n]::before{content:attr(data-n);position:absolute;left:-2px;top:-2px;min-width:17px;height:17px;padding:0 4px;background:#e5322d;color:#fff;font:700 11px/17px var(--sans);text-align:center;border-radius:2px 0 6px 0}
+.mk.act{border-width:3px;background:rgba(229,50,45,.18)}
+.mk i{position:absolute;width:13px;height:13px;border-radius:50%;background:#e5322d;border:2px solid #fff}
+.mk i:nth-child(1){left:-8px;top:-8px}.mk i:nth-child(2){right:-8px;top:-8px}.mk i:nth-child(3){left:-8px;bottom:-8px}.mk i:nth-child(4){right:-8px;bottom:-8px}
+@media(max-width:759px){
+  #list{display:block;flex:none;min-height:0}
+  .mcol{display:block}
+  #colL,#colR{overflow:visible;padding:0}
+  .msg{margin-bottom:6px}
+}
 @media (hover:hover) and (pointer:fine){#paste{display:none}}
 
 @media(max-width:820px){
@@ -208,25 +277,31 @@ input[type=range]{padding:0;border:0;background:transparent;accent-color:var(--p
     </header>
     <main>
       <div class="box" id="drop">
-        <div class="row">
-          <div class="seg"><button data-t="prompt" class="on">Prompt</button><button data-t="answer">Jawaban</button></div>
-          <span class="sp"></span>
-          <button type="button" id="paste">Tempel</button>
-          <button type="button" id="pick">Foto / gambar</button>
+        <div class="tawrap">
+          <textarea id="txt" placeholder="Tulis atau tempel teks. Ctrl+Enter untuk kirim."></textarea>
+          <div class="tabtns">
+            <button type="button" class="ib" id="paste" data-ico="paste" title="Tempel dari clipboard" aria-label="Tempel dari clipboard"></button>
+            <button type="button" class="ib" id="pick" data-ico="image" title="Tambah foto atau gambar" aria-label="Tambah foto atau gambar"></button>
+          </div>
           <input id="file" type="file" accept="image/*" hidden>
         </div>
-        <textarea id="txt" placeholder="Tulis atau tempel teks. Di PC, Ctrl+V menempel screenshot. Ctrl+Enter untuk kirim."></textarea>
-        <img id="prev" alt="Pratinjau gambar">
+        <div class="prow" id="prow" hidden>
+          <img id="prev" alt="Pratinjau gambar">
+          <div class="pacts">
+            <button type="button" class="ib" id="edit" data-ico="edit" title="Edit gambar (tandai, potong, perjelas)" aria-label="Edit gambar" hidden></button>
+            <button type="button" class="ib" id="ocr" data-ico="scan" title="Baca teks dari gambar" aria-label="Baca teks dari gambar" hidden></button>
+            <button type="button" class="ib del" id="rm" data-ico="trash" title="Hapus gambar" aria-label="Hapus gambar" hidden></button>
+          </div>
+        </div>
         <div class="row">
-          <button id="edit" hidden>Edit gambar</button>
-          <button id="ocr" hidden>Baca teks dari gambar</button>
-          <button id="rm" hidden>Hapus gambar</button>
+          <div class="seg"><button data-t="prompt" class="on">Prompt</button><button data-t="answer">Jawaban</button></div>
           <span class="sp"></span>
           <button class="main" id="send">Kirim</button>
         </div>
         <div id="st" role="status"></div>
       </div>
-      <div id="list"></div>
+      <p class="empty" id="empty" hidden>Belum ada pesan di chat ini. Kirim yang pertama.</p>
+      <div id="list"><div class="mcol" id="colL"></div><div class="mcol" id="colR"></div></div>
     </main>
   </div>
 </div>
@@ -237,16 +312,23 @@ input[type=range]{padding:0;border:0;background:transparent;accent-color:var(--p
     <button id="edcancel">Batal</button>
     <button class="main" id="eddone">Selesai</button>
   </div>
-  <div id="edstage"><div id="edwrap"><canvas id="edcv"></canvas><div id="edsel" hidden><i></i><i></i><i></i><i></i></div></div></div>
+  <div id="edstage"><div id="edwrap"><canvas id="edcv"></canvas><div id="edmarks"></div><div id="edsel" hidden><i></i><i></i><i></i><i></i></div></div></div>
   <div class="edtools">
-    <div class="edhint">Seret pada gambar untuk memilih area; geser tepi atau sudutnya untuk mengubah ukuran. “Potong” memangkas gambar, sedangkan “Baca” hanya membaca area terpilih.</div>
+    <div class="edhint" id="edhint"></div>
     <div class="row">
-      <button id="edrot">⟳ Putar</button>
-      <button id="edcrop" disabled>✂ Potong</button>
-      <button id="edclr" disabled>Hapus pilihan</button>
+      <div class="seg" role="group" aria-label="Alat"><button data-m="mark" class="on"><span data-ico="mark"></span> Tandai</button><button data-m="crop"><span data-ico="crop"></span> Potong</button></div>
       <span class="sp"></span>
-      <button id="edundo" disabled>Urungkan</button>
-      <button id="edreset">Atur ulang</button>
+      <button class="ib" id="edrot" data-ico="rotate" title="Putar 90°" aria-label="Putar 90 derajat"></button>
+      <button class="ib" id="edundo" data-ico="undo" title="Urungkan" aria-label="Urungkan" disabled></button>
+      <button class="ib" id="edreset" data-ico="reset" title="Atur ulang" aria-label="Atur ulang"></button>
+    </div>
+    <div class="row" id="edmk">
+      <button id="edmkdel" disabled><span data-ico="trash"></span> Hapus tanda</button>
+      <button id="edmkclr" disabled>Hapus semua tanda</button>
+    </div>
+    <div class="row" id="edcp" hidden>
+      <button class="main" id="edcrop" disabled><span data-ico="crop"></span> Potong</button>
+      <button id="edclr" disabled>Batal pilih</button>
     </div>
     <div class="row">
       <div class="seg" role="group" aria-label="Filter"><button data-f="asli" class="on">Asli</button><button data-f="jelas">Jelas</button><button data-f="bw">Hitam-putih</button></div>
@@ -303,7 +385,7 @@ auth.onAuthStateChanged(u => {
   $("splash").classList.add("off");
   $("login").hidden = !!u; $("app").hidden = !u;
   chatsUnsub && chatsUnsub(); msgsUnsub && msgsUnsub(); chatsUnsub = msgsUnsub = null;
-  els.forEach(e => e.remove()); els.clear(); imgCache.clear();
+  els.forEach(e => e.remove()); els.clear(); imgCache.clear(); clearList();
   chatId = null; chats = [];
   if (u) { $("pw").value = ""; $("lerr").textContent = ""; startChats(); }
 });
@@ -347,8 +429,8 @@ function selectChat(id){
   if (id === chatId) return;
   chatId = id; store.set("chat", id);
   msgsUnsub && msgsUnsub();
-  els.forEach(e => e.remove()); els.clear(); imgCache.clear();
-  $("list").innerHTML = ""; status("");
+  els.forEach(e => e.remove()); els.clear(); imgCache.clear(); clearList();
+  status("");
   msgsUnsub = db.collection("chats").doc(id).collection("messages").orderBy("createdAt", "desc").limit(100)
     .onSnapshot(render, e => status("Gagal memuat pesan: " + e.message));
   renderChats(); closeSide();
@@ -485,20 +567,30 @@ function packUrl(c, bw){                     // JPEG; untuk hitam-putih pilih PN
   const j = c.toDataURL("image/jpeg", Q_SEND); if (!bw) return j;
   const p = c.toDataURL("image/png"); return p.length < j.length ? p : j;
 }
-function renderFinal(base, filter, sharp){
-  const out = fitMax(base, MAX_SEND); applyFilter(out, filter, sharp / 100); return packUrl(out, filter === "bw");
+function drawMarks(c, marks){                // kotak merah ikut tergambar di gambar yang dikirim
+  if (!marks || !marks.length) return;
+  const x = c.getContext("2d"), W = c.width, H = c.height, lw = Math.max(2, Math.round(Math.max(W, H) / 330)), multi = marks.length > 1;
+  marks.forEach((m, i) => {
+    const n = norm(m), px = n.x0 * W, py = n.y0 * H, pw = (n.x1 - n.x0) * W, ph = (n.y1 - n.y0) * H;
+    x.fillStyle = "rgba(229,50,45,.10)"; x.fillRect(px, py, pw, ph);
+    x.strokeStyle = "#e5322d"; x.lineWidth = lw; x.strokeRect(px + lw / 2, py + lw / 2, pw - lw, ph - lw);
+    if (multi) { const s = lw * 6; x.fillStyle = "#e5322d"; x.fillRect(px, py, s, s); x.fillStyle = "#fff"; x.font = `700 ${Math.round(s * .75)}px sans-serif`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(String(i + 1), px + s / 2, py + s / 2 + 1); }
+  });
+}
+function renderFinal(base, filter, sharp, marks){
+  const out = fitMax(base, MAX_SEND); applyFilter(out, filter, sharp / 100); drawMarks(out, marks); return packUrl(out, filter === "bw");
 }
 
 /* ---------- gambar masukan ---------- */
-let pic = null;                              // { orig, work, filter, sharp } -> orig: asli, work: hasil potong/putar (resolusi tinggi)
+let pic = null;                              // { orig, work, filter, sharp, marks } -> work: hasil potong/putar (resolusi tinggi); marks: kotak merah (pecahan 0..1)
+function showPic(on){ $("prow").hidden = !on; $("ocr").hidden = $("rm").hidden = $("edit").hidden = !on; $("prev").style.display = on ? "block" : "none"; }
 async function setImage(file){
   status("Memproses gambar…");
-  try { const c = await fileToCanvas(file); pic = { orig: c, work: c, filter: "asli", sharp: 120 }; img = renderFinal(c, "asli", 0); }
+  try { const c = await fileToCanvas(file); pic = { orig: c, work: c, filter: "asli", sharp: 120, marks: [] }; img = renderFinal(c, "asli", 0); }
   catch { return status("Gambar tidak bisa dibaca."); }
-  $("prev").src = img; $("prev").style.display = "block";
-  $("ocr").hidden = $("rm").hidden = $("edit").hidden = false; status("");
+  $("prev").src = img; showPic(true); ocrTitle(); status("");
 }
-function clearImage(){ img = pic = null; $("prev").style.display = "none"; $("ocr").hidden = $("rm").hidden = $("edit").hidden = true; $("file").value = ""; }
+function clearImage(){ img = pic = null; showPic(false); $("file").value = ""; }
 $("pick").onclick = () => $("file").click();
 $("file").onchange = e => e.target.files[0] && setImage(e.target.files[0]);
 $("rm").onclick = clearImage;
@@ -535,36 +627,53 @@ function prepare(src, bin){                  // perbesar, kontras, balik latar g
   return grayToCanvas(grayPipeline(d, w, h, 1.3, bin), w, h, 30);
 }
 const hint = conf => conf < 60 ? " Hasil kurang yakin: coba potong ke bagian tulisannya saja, atau pakai filter Jelas / Hitam-putih di Edit gambar." : "";
-async function runOCR(src, btn, opts = {}){
+async function runOCR(src, btn, opts = {}){   // src: kanvas / data-URL / daftar keduanya (beberapa area dibaca berurutan)
   if (ocrBusy) { status("Masih membaca, tunggu sebentar…"); return { text: "", conf: 0 }; }
   ocrBusy = true; btn && (btn.disabled = true);
   try {
-    const c = typeof src === "string" ? await urlToCanvas(src) : src;
+    const list = Array.isArray(src) ? src : [src], texts = []; let conf = 100;
     status("Menyiapkan pembaca teks…");
     const w = await getWorker();
-    await w.setParameters({ tessedit_pageseg_mode: opts.block ? "6" : "3" });    // 6 = satu blok teks (area terpilih)
-    let best = null;
-    for (const [k, bin] of [[1, false], [2, true]]) {     // dua percobaan: abu-abu tajam & hitam-putih; ambil yang paling yakin
-      ocrLabel = `Membaca teks (percobaan ${k}/2)… `; status(ocrLabel + "0%");
-      await new Promise(r => setTimeout(r, 20));
-      const r = await w.recognize(prepare(c, bin));
-      const text = r.data.text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(), conf = r.data.confidence || 0;
-      if (!best || !best.text || (text && conf > best.conf)) best = { text, conf };
+    await w.setParameters({ tessedit_pageseg_mode: opts.block ? "6" : "3" });    // 6 = satu blok teks (area bertanda)
+    for (let a = 0; a < list.length; a++) {
+      const c = typeof list[a] === "string" ? await urlToCanvas(list[a]) : list[a];
+      let best = null;
+      for (const [k, bin] of [[1, false], [2, true]]) {   // dua percobaan: abu-abu tajam & hitam-putih; ambil yang paling yakin
+        ocrLabel = (list.length > 1 ? `Area ${a + 1}/${list.length}, ` : "") + `membaca (percobaan ${k}/2)… `; status(ocrLabel + "0%");
+        await new Promise(r => setTimeout(r, 20));
+        const r = await w.recognize(prepare(c, bin));
+        const text = r.data.text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(), cf = r.data.confidence || 0;
+        if (!best || !best.text || (text && cf > best.conf)) best = { text, conf: cf };
+      }
+      texts.push(best.text); if (best.text) conf = Math.min(conf, best.conf);
     }
-    status(""); return best;
+    status(""); return { text: texts.filter(Boolean).join("\n\n"), conf };
   } catch { status("OCR gagal. Coba gambar yang lebih jelas."); return { text: "", conf: 0 }; }
   finally { ocrBusy = false; btn && (btn.disabled = false); }
 }
+const areasOf = (base, marks) => marks && marks.length ? marks.map(m => cropCanvas(base, norm(m))) : base;
+const ocrTitle = () => $("ocr").title = pic && pic.marks.length ? "Baca teks dari area bertanda" : "Baca teks dari gambar";
 $("ocr").onclick = async () => {
-  const r = await runOCR(pic ? pic.work : img, $("ocr"));
+  const ms = pic ? pic.marks : [];
+  const r = await runOCR(pic ? areasOf(pic.work, ms) : img, $("ocr"), { block: ms.length > 0 });
   if (r.text) { $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + r.text; status("Teks dari gambar sudah ditambahkan. Silakan periksa dulu." + hint(r.conf)); }
   else if (!$("st").textContent) status("Tidak ada teks terbaca.");
 };
 
-/* ---------- editor gambar: potong, tandai area, putar, perjelas ---------- */
+/* ---------- editor gambar: tandai (kotak merah), potong, putar, perjelas ---------- */
 let ed = null, sel = null, drag = null, raf = 0;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const norm = s => ({ x0: Math.min(s.x0, s.x1), y0: Math.min(s.y0, s.y1), x1: Math.max(s.x0, s.x1), y1: Math.max(s.y0, s.y1) });
+const cloneMarks = ms => ms.map(m => ({ ...m }));
+const marksAfterRotate = ms => ms.map(m => { const n = norm(m); return { x0: 1 - n.y1, y0: n.x0, x1: 1 - n.y0, y1: n.x1 }; });   // putar 90° searah jarum jam
+function marksAfterCrop(ms, c){
+  const w = c.x1 - c.x0, h = c.y1 - c.y0, out = [];
+  ms.forEach(m => {
+    const n = norm(m), x0 = Math.max(n.x0, c.x0), y0 = Math.max(n.y0, c.y0), x1 = Math.min(n.x1, c.x1), y1 = Math.min(n.y1, c.y1);
+    if (x1 - x0 > .02 * w && y1 - y0 > .02 * h) out.push({ x0: (x0 - c.x0) / w, y0: (y0 - c.y0) / h, x1: (x1 - c.x0) / w, y1: (y1 - c.y0) / h });
+  });
+  return out;
+}
 function cropCanvas(b, n){
   const sx = Math.round(n.x0 * b.width), sy = Math.round(n.y0 * b.height);
   const sw = Math.max(8, Math.min(b.width - sx, Math.round((n.x1 - n.x0) * b.width))), sh = Math.max(8, Math.min(b.height - sy, Math.round((n.y1 - n.y0) * b.height)));
@@ -576,15 +685,21 @@ function rotated(b){
 }
 function openEditor(){
   if (!pic) return;
-  ed = { base: pic.work, stack: [], filter: pic.filter, sharp: pic.sharp };
+  ed = { base: pic.work, stack: [], filter: pic.filter, sharp: pic.sharp, mode: "mark", marks: cloneMarks(pic.marks), active: -1 };
   sel = null; $("edtxt").value = ""; $("ed").hidden = false; document.body.style.overflow = "hidden";
   syncEd(); renderPreview();
 }
-function closeEditor(){ $("ed").hidden = true; document.body.style.overflow = ""; ed = null; sel = null; status(""); }
+function closeEditor(){ $("ed").hidden = true; document.body.style.overflow = ""; ed = null; sel = null; drag = null; status(""); }
 function syncEd(){
+  const m = ed.mode === "mark";
+  document.querySelectorAll("[data-m]").forEach(b => b.classList.toggle("on", b.dataset.m === ed.mode));
+  $("edmk").hidden = !m; $("edcp").hidden = m;
+  $("edmkdel").disabled = $("edmkclr").disabled = !ed.marks.length;
   $("edcrop").disabled = $("edclr").disabled = !sel;
   $("edundo").disabled = !ed.stack.length;
-  $("edread").textContent = sel ? "Baca area terpilih" : "Baca seluruh gambar";
+  $("edhint").textContent = m ? "Seret di gambar untuk menandai bagian yang mau dibaca (kotak merah). Ketuk kotak untuk memilih, geser tepi atau sudutnya untuk mengubah. Tanda tetap ada setelah Selesai."
+                              : "Seret di gambar untuk memilih bagian yang mau dipotong, lalu tekan Potong.";
+  $("edread").textContent = ed.marks.length ? `Baca ${ed.marks.length} area bertanda` : "Baca seluruh gambar";
   $("eduse").disabled = !$("edtxt").value.trim();
   document.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", b.dataset.f === ed.filter));
   $("edsharp").value = ed.sharp; $("edsharp").disabled = ed.filter === "asli";
@@ -603,48 +718,69 @@ function fitPreview(){
   const aw = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), ah = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
   const k = Math.min(aw / cv.width, ah / cv.height, 3);
   cv.style.width = Math.floor(cv.width * k) + "px"; cv.style.height = Math.floor(cv.height * k) + "px";
-  drawSel();
+  drawOverlay();
 }
-function drawSel(){
-  const el = $("edsel"); if (!sel) { el.hidden = true; return; }
-  const n = norm(sel), W = $("edcv").clientWidth, H = $("edcv").clientHeight;
+function drawOverlay(){
+  if (!ed) return;
+  const cv = $("edcv"), W = cv.clientWidth, H = cv.clientHeight, host = $("edmarks");
+  host.replaceChildren();
+  ed.marks.forEach((m, i) => {
+    const n = norm(m), d = document.createElement("div"), act = ed.mode === "mark" && i === ed.active;
+    d.className = "mk" + (act ? " act" : ""); if (ed.marks.length > 1) d.dataset.n = i + 1;
+    Object.assign(d.style, { left: n.x0 * W + "px", top: n.y0 * H + "px", width: (n.x1 - n.x0) * W + "px", height: (n.y1 - n.y0) * H + "px" });
+    if (act) for (let k = 0; k < 4; k++) d.append(document.createElement("i"));
+    host.append(d);
+  });
+  const el = $("edsel");
+  if (!sel || ed.mode !== "crop") { el.hidden = true; return; }
+  const n = norm(sel);
   el.hidden = false; Object.assign(el.style, { left: n.x0 * W + "px", top: n.y0 * H + "px", width: (n.x1 - n.x0) * W + "px", height: (n.y1 - n.y0) * H + "px" });
 }
-function setBase(c){ ed.stack.push(ed.base); if (ed.stack.length > 3) ed.stack.shift(); ed.base = c; sel = null; syncEd(); renderPreview(); }
+function setBase(c, marks){
+  ed.stack.push({ base: ed.base, marks: cloneMarks(ed.marks) }); if (ed.stack.length > 3) ed.stack.shift();
+  ed.base = c; ed.marks = marks; ed.active = -1; sel = null; syncEd(); renderPreview();
+}
 const pt = e => { const r = $("edcv").getBoundingClientRect(); return { x: clamp((e.clientX - r.left) / r.width), y: clamp((e.clientY - r.top) / r.height), r }; };
+function hitRect(n, p, tx, ty){               // tepi/sudut -> ubah ukuran, bagian dalam -> geser
+  if (!(p.x > n.x0 - tx && p.x < n.x1 + tx && p.y > n.y0 - ty && p.y < n.y1 + ty)) return null;
+  let l = Math.abs(p.x - n.x0) < tx, r = Math.abs(p.x - n.x1) < tx, t = Math.abs(p.y - n.y0) < ty, b = Math.abs(p.y - n.y1) < ty;
+  if (l && r) { l = Math.abs(p.x - n.x0) <= Math.abs(p.x - n.x1); r = !l; }
+  if (t && b) { t = Math.abs(p.y - n.y0) <= Math.abs(p.y - n.y1); b = !t; }
+  if (l || r || t || b) return { l, r, t, b, n };
+  return p.x > n.x0 && p.x < n.x1 && p.y > n.y0 && p.y < n.y1 ? { move: true, n, px: p.x, py: p.y } : null;
+}
+const getRect = k => ed.mode === "mark" ? ed.marks[k] : sel;
+const putRect = (k, r) => { if (ed.mode === "mark") ed.marks[k] = r; else sel = r; };
 $("edstage").addEventListener("pointerdown", e => {
   if (!ed) return;
-  const p = pt(e), tx = 26 / p.r.width, ty = 26 / p.r.height; drag = null;
-  if (sel) {
-    const n = norm(sel);
-    if (p.x > n.x0 - tx && p.x < n.x1 + tx && p.y > n.y0 - ty && p.y < n.y1 + ty) {
-      let l = Math.abs(p.x - n.x0) < tx, r = Math.abs(p.x - n.x1) < tx, t = Math.abs(p.y - n.y0) < ty, b = Math.abs(p.y - n.y1) < ty;
-      if (l && r) { l = Math.abs(p.x - n.x0) <= Math.abs(p.x - n.x1); r = !l; }
-      if (t && b) { t = Math.abs(p.y - n.y0) <= Math.abs(p.y - n.y1); b = !t; }
-      if (l || r || t || b) drag = { l, r, t, b, n };
-      else if (p.x > n.x0 && p.x < n.x1 && p.y > n.y0 && p.y < n.y1) drag = { move: true, n, px: p.x, py: p.y };
-    }
+  const p = pt(e), tx = 26 / p.r.width, ty = 26 / p.r.height, rects = ed.mode === "mark" ? ed.marks : (sel ? [sel] : []); drag = null;
+  for (let k = rects.length - 1; k >= 0 && !drag; k--) { const h = hitRect(norm(rects[k]), p, tx, ty); if (h) drag = { ...h, k }; }
+  if (!drag) {
+    const r = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+    if (ed.mode === "mark") { ed.marks.push(r); drag = { fresh: true, k: ed.marks.length - 1 }; } else { sel = r; drag = { fresh: true, k: 0 }; }
   }
-  if (!drag) { sel = { x0: p.x, y0: p.y, x1: p.x, y1: p.y }; drag = { fresh: true }; }
+  if (ed.mode === "mark") ed.active = drag.k;
   try { $("edstage").setPointerCapture(e.pointerId); } catch {}
-  drawSel();
+  drawOverlay();
 });
 $("edstage").addEventListener("pointermove", e => {
-  if (!drag) return;
-  const p = pt(e);
-  if (drag.fresh) { sel.x1 = p.x; sel.y1 = p.y; }
+  if (!drag || !ed) return;
+  const p = pt(e), cur = getRect(drag.k);
+  if (drag.fresh) { cur.x1 = p.x; cur.y1 = p.y; }
   else if (drag.move) {
     const n = drag.n, w = n.x1 - n.x0, h = n.y1 - n.y0, x0 = clamp(n.x0 + p.x - drag.px, 0, 1 - w), y0 = clamp(n.y0 + p.y - drag.py, 0, 1 - h);
-    sel = { x0, y0, x1: x0 + w, y1: y0 + h };
-  } else {
-    const n = { ...drag.n }; if (drag.l) n.x0 = p.x; if (drag.r) n.x1 = p.x; if (drag.t) n.y0 = p.y; if (drag.b) n.y1 = p.y; sel = n;
-  }
-  drawSel();
+    putRect(drag.k, { x0, y0, x1: x0 + w, y1: y0 + h });
+  } else { const n = { ...drag.n }; if (drag.l) n.x0 = p.x; if (drag.r) n.x1 = p.x; if (drag.t) n.y0 = p.y; if (drag.b) n.y1 = p.y; putRect(drag.k, n); }
+  drawOverlay();
 });
 const endDrag = () => {
-  if (!drag) return; drag = null;
-  if (sel) { const n = norm(sel); if (n.x1 - n.x0 < .03 || n.y1 - n.y0 < .03) sel = null; }
-  if (ed) { drawSel(); syncEd(); }
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (ed) {
+    const r = getRect(d.k), n = r && norm(r);
+    if (n && d.fresh && (n.x1 - n.x0 < .02 || n.y1 - n.y0 < .02)) { if (ed.mode === "mark") { ed.marks.splice(d.k, 1); ed.active = -1; } else sel = null; }
+    drawOverlay(); syncEd();
+  }
 };
 $("edstage").addEventListener("pointerup", endDrag);
 $("edstage").addEventListener("pointercancel", endDrag);
@@ -652,11 +788,14 @@ window.addEventListener("resize", () => ed && fitPreview());
 document.addEventListener("keydown", e => e.key === "Escape" && ed && closeEditor());
 
 $("edit").onclick = $("prev").onclick = openEditor;
-$("edrot").onclick = () => setBase(rotated(ed.base));
-$("edcrop").onclick = () => setBase(cropCanvas(ed.base, norm(sel)));
-$("edclr").onclick = () => { sel = null; drawSel(); syncEd(); };
-$("edundo").onclick = () => { if (!ed.stack.length) return; ed.base = ed.stack.pop(); sel = null; syncEd(); renderPreview(); };
-$("edreset").onclick = () => { ed.filter = "asli"; ed.sharp = 120; setBase(pic.orig); };
+document.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { ed.mode = b.dataset.m; sel = null; ed.active = -1; syncEd(); drawOverlay(); });
+$("edrot").onclick = () => setBase(rotated(ed.base), marksAfterRotate(ed.marks));
+$("edcrop").onclick = () => { const n = norm(sel); setBase(cropCanvas(ed.base, n), marksAfterCrop(ed.marks, n)); };
+$("edclr").onclick = () => { sel = null; drawOverlay(); syncEd(); };
+$("edmkdel").onclick = () => { if (!ed.marks.length) return; ed.marks.splice(ed.active >= 0 ? ed.active : ed.marks.length - 1, 1); ed.active = -1; drawOverlay(); syncEd(); };
+$("edmkclr").onclick = () => { ed.marks = []; ed.active = -1; drawOverlay(); syncEd(); };
+$("edundo").onclick = () => { if (!ed.stack.length) return; const s = ed.stack.pop(); ed.base = s.base; ed.marks = s.marks; ed.active = -1; sel = null; syncEd(); renderPreview(); };
+$("edreset").onclick = () => { ed.filter = "asli"; ed.sharp = 120; setBase(pic.orig, []); };
 document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { ed.filter = b.dataset.f; syncEd(); renderPreview(); });
 $("edsharp").oninput = e => { ed.sharp = +e.target.value; cancelAnimationFrame(raf); raf = requestAnimationFrame(renderPreview); };
 $("edtxt").addEventListener("input", () => ed && ($("eduse").disabled = !$("edtxt").value.trim()));
@@ -664,15 +803,14 @@ $("edcancel").onclick = closeEditor;
 async function commitEditor(){
   status("Menerapkan perubahan…"); await new Promise(r => setTimeout(r, 30));
   try {
-    pic.work = ed.base; pic.filter = ed.filter; pic.sharp = ed.sharp;
-    img = renderFinal(ed.base, ed.filter, ed.sharp); $("prev").src = img;
+    pic.work = ed.base; pic.filter = ed.filter; pic.sharp = ed.sharp; pic.marks = cloneMarks(ed.marks);
+    img = renderFinal(ed.base, ed.filter, ed.sharp, pic.marks); $("prev").src = img; ocrTitle();
     closeEditor();
   } catch (e) { status("Gagal menerapkan: " + e.message); }
 }
 $("eddone").onclick = commitEditor;
 $("edread").onclick = async () => {
-  const area = sel ? cropCanvas(ed.base, norm(sel)) : ed.base;
-  const r = await runOCR(area, $("edread"), { block: !!sel });
+  const r = await runOCR(areasOf(ed.base, ed.marks), $("edread"), { block: ed.marks.length > 0 });
   if (r.text) { $("edtxt").value = ($("edtxt").value ? $("edtxt").value + "\n\n" : "") + r.text; syncEd(); status("Selesai dibaca. Periksa hasilnya, lalu pilih “Pakai teks & selesai”." + hint(r.conf)); }
   else if (!$("st").textContent) status("Tidak ada teks terbaca.");
 };
@@ -681,32 +819,6 @@ $("eduse").onclick = async () => {
   $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + t;
   await commitEditor(); status("Teks sudah ditambahkan ke kotak teks.");
 };
-
-/* ---------- kirim: gambar dipotong jadi chunks ---------- */
-$("send").onclick = async () => {
-  const text = $("txt").value.trim();
-  if (!chatId) return status("Chat belum siap.");
-  if (!text && !img) return status("Isi teks atau tambahkan gambar dulu.");
-  $("send").disabled = true;
-  try {
-    const chat = db.collection("chats").doc(chatId), mref = chat.collection("messages").doc(), b = db.batch();
-    let n = 0;
-    if (img) {
-      for (let i = 0; i < img.length; i += CHUNK, n++)
-        b.set(mref.collection("chunks").doc(String(n).padStart(4, "0")), { i: n, d: img.slice(i, i + CHUNK) });
-      imgCache.set(mref.id, Promise.resolve(img));
-    }
-    b.set(mref, { text, type, device, imgChunks: n, imgSize: img ? img.length : 0, createdAt: TS() });
-    const cur = chats.find(c => c.id === chatId);
-    const upd = { updatedAt: TS(), last: (text || "🖼 Gambar").replace(/\s+/g, " ").slice(0, 80) };
-    if (!cur || cur.title === DEFAULT_TITLE) upd.title = (text || "Gambar").replace(/\s+/g, " ").slice(0, 32);
-    b.update(chat, upd);
-    await b.commit();
-    $("txt").value = ""; clearImage(); status("Terkirim.");
-  } catch (e) { status("Gagal kirim: " + e.message); }
-  $("send").disabled = false;
-};
-$("txt").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("send").click(); } });
 
 /* ---------- tempel: dari clipboard & dari ChatGPT (format ikut) ---------- */
 /*HTML2MD-START*/
@@ -886,11 +998,36 @@ const MD_HINT = /(^|\n)\s{0,3}(#{1,6}\s|```|~~~|>\s|[-*+]\s+\S|\d{1,3}[.)]\s+\S)
 const hasMd = t => MD_HINT.test(t);
 const plainDiv = t => { const p = mk("div", "txt"); p.textContent = t; return p; };
 
+/* ---------- ikon (SVG inline) ---------- */
+const ICON = {
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6M14 11v6"/>',
+  raw: '<path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>',
+  image: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  imgcopy: '<rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/><circle cx="14" cy="13" r="1"/><path d="m21 18-2.5-2.5a1.4 1.4 0 0 0-2 0L12 20"/>',
+  scan: '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8h8M7 12h10M7 16h6"/>',
+  paste: '<path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/>',
+  edit: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  rotate: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>',
+  reset: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  crop: '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>',
+  mark: '<rect x="4" y="5" width="16" height="14" rx="2"/>'
+};
+const ico = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[n] + '</svg>';
+document.querySelectorAll("[data-ico]").forEach(b => b.innerHTML = ico(b.dataset.ico));
+
 /* ---------- tampilan pesan ---------- */
+function flash(btn, ok = true){
+  const o = btn.innerHTML; btn.innerHTML = btn.classList.contains("ib") ? ico(ok ? "check" : "x") : (ok ? "Tersalin" : "Gagal");
+  setTimeout(() => btn.innerHTML = o, 1200);
+}
 async function copy(text, btn){
   try { await navigator.clipboard.writeText(text); }
   catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
-  const o = btn.textContent; btn.textContent = "Tersalin"; setTimeout(() => btn.textContent = o, 1200);
+  flash(btn);
 }
 function loadImage(ref, n){
   if (imgCache.has(ref.id)) return imgCache.get(ref.id);
@@ -911,49 +1048,84 @@ function toPng(blob){
 const whenText = d => d.createdAt ? d.createdAt.toDate().toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "mengirim…";
 function buildMsg(doc, d){
   const el = document.createElement("article"); el.className = "msg " + d.type;
-  el.innerHTML = `<div class="meta"><span class="tag">${d.type === "answer" ? "Jawaban" : "Prompt"}</span><span>${d.device || ""} <span class="when"></span></span></div>`;
-  el.querySelector(".when").textContent = whenText(d);
+  const meta = document.createElement("div"); meta.className = "meta";
+  const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = d.type === "answer" ? "Jawaban" : "Prompt";
+  const who = document.createElement("span"); who.append((d.device || "") + " "); const when = document.createElement("span"); when.className = "when"; when.textContent = whenText(d); who.append(when);
+  const acts = document.createElement("span"); acts.className = "acts";
+  meta.append(tag, who, acts); el.append(meta);
+  const add = (icon, label, fn, cls = "") => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "ib " + cls; b.innerHTML = ico(icon);
+    b.title = label; b.setAttribute("aria-label", label); b.onclick = () => fn(b); acts.append(b); return b;
+  };
   const rich = !!d.text && hasMd(d.text);
   let body = null;
   if (d.text) { body = rich ? mdRender(d.text) : plainDiv(d.text); el.append(body); }
   const n = d.imgChunks || 0;
   if (n) {
     const i = document.createElement("img"); i.className = "pic loading"; i.alt = "";
+    i.onclick = () => i.classList.toggle("big");
     el.append(i);
     loadImage(doc.ref, n).then(u => { i.src = u; i.alt = "Gambar terlampir"; i.classList.remove("loading"); })
       .catch(() => { const e = document.createElement("div"); e.className = "txt"; e.textContent = "Gambar gagal dimuat."; i.replaceWith(e); });
   }
-  const row = document.createElement("div"); row.className = "row";
-  const add = (label, fn, cls) => { const b = document.createElement("button"); b.textContent = label; if (cls) b.className = cls; b.onclick = () => fn(b); row.append(b); };
-  if (d.text) add("Salin teks", b => copy(d.text, b));
-  if (rich) { let raw = false; add("Teks mentah", b => { raw = !raw; const nb = raw ? plainDiv(d.text) : mdRender(d.text); body.replaceWith(nb); body = nb; b.textContent = raw ? "Tampilan rapi" : "Teks mentah"; }); }
+  if (d.text) add("copy", "Salin teks", b => copy(d.text, b));
+  if (rich) { let raw = false; add("raw", "Teks mentah / tampilan rapi", b => { raw = !raw; const nb = raw ? plainDiv(d.text) : mdRender(d.text); body.replaceWith(nb); body = nb; b.classList.toggle("on", raw); }); }
   if (n) {
-    add("Salin gambar", async b => {
-      try { const u = await loadImage(doc.ref, n); const blob = await (await fetch(u)).blob(); await navigator.clipboard.write([new ClipboardItem({ "image/png": await toPng(blob) })]); b.textContent = "Tersalin"; }
-      catch { b.textContent = "Tahan gambar untuk menyalin"; }
+    add("imgcopy", "Salin gambar", async b => {
+      try { const u = await loadImage(doc.ref, n); const blob = await (await fetch(u)).blob(); await navigator.clipboard.write([new ClipboardItem({ "image/png": await toPng(blob) })]); flash(b); }
+      catch { flash(b, false); status("Gambar tidak bisa disalin otomatis. Tahan gambar untuk menyalin."); }
     });
-    add("Baca teks", async b => { const r = await runOCR(await loadImage(doc.ref, n), b); if (r.text) { await copy(r.text, b); status("Teks hasil OCR sudah disalin." + hint(r.conf)); } else if (!$("st").textContent) status("Tidak ada teks terbaca."); });
+    add("scan", "Baca teks dari gambar", async b => { const r = await runOCR(await loadImage(doc.ref, n), b); if (r.text) { await copy(r.text, b); status("Teks hasil OCR sudah disalin." + hint(r.conf)); } else if (!$("st").textContent) status("Tidak ada teks terbaca."); });
   }
-  add("Hapus", async () => {
+  add("trash", "Hapus pesan", async () => {
     if (!confirm("Hapus pesan ini?")) return;
     try { const cs = await doc.ref.collection("chunks").get(); await commitDeletes([...cs.docs.map(x => x.ref), doc.ref]); }
     catch (e) { status("Gagal menghapus: " + e.message); }
   }, "del");
-  el.append(row); return el;
+  return el;
 }
+
+/* ---------- tata letak: kolom kiri dulu, penuh baru ke kolom kanan (hanya kanan yang di-scroll) ---------- */
+let msgOrder = [], laySched = 0;
+const ro = typeof ResizeObserver === "function" ? new ResizeObserver(() => layoutSoon()) : null;
+const wide = () => matchMedia("(min-width:760px)").matches;
+function layoutSoon(){ if (!laySched) laySched = requestAnimationFrame(() => { laySched = 0; layoutMsgs(); }); }
+function clearList(){
+  msgOrder = []; $("colL").replaceChildren(); $("colR").replaceChildren();
+  if (ro) { ro.disconnect(); ro.observe($("list")); }
+}
+function layoutMsgs(){
+  const L = $("colL"), R = $("colR"), set = new Set(msgOrder), n = msgOrder.length;
+  [L, R].forEach(c => [...c.children].forEach(el => { if (!set.has(el)) el.remove(); }));
+  msgOrder.forEach(el => { if (el.parentNode !== L && el.parentNode !== R) L.append(el); });     // semua harus ada di DOM agar bisa diukur
+  let split = n;
+  if (wide() && n > 1) {
+    const H = L.clientHeight, gap = parseFloat(getComputedStyle(L).rowGap) || 0; let used = 0; split = 0;
+    for (let i = 0; i < n; i++) {
+      const h = msgOrder[i].offsetHeight + (i ? gap : 0);
+      if (i > 0 && used + h > H) break;
+      used += h; split = i + 1;
+    }
+    L.classList.toggle("sc", split === 1 && msgOrder[0].offsetHeight > H);   // satu pesan lebih tinggi dari kolom: boleh di-scroll
+  } else L.classList.remove("sc");
+  msgOrder.forEach((el, i) => {
+    const col = i < split ? L : R, ref = col.children[i < split ? i : i - split];
+    if (ref !== el) col.insertBefore(el, ref || null);
+  });
+}
+window.addEventListener("resize", layoutSoon);
 function render(snap){
-  const list = $("list"), ids = new Set(snap.docs.map(d => d.id));
+  const ids = new Set(snap.docs.map(d => d.id));
   els.forEach((el, id) => { if (!ids.has(id)) { el.remove(); els.delete(id); } });
-  const empty = list.querySelector(".empty");
-  if (snap.empty) { if (!empty) list.innerHTML = '<p class="empty">Belum ada pesan di chat ini. Kirim yang pertama.</p>'; return; }
-  empty && empty.remove();
-  snap.docs.forEach((doc, i) => {
+  $("empty").hidden = !snap.empty; $("list").hidden = snap.empty;
+  msgOrder = snap.docs.map((doc, i) => {
     const d = doc.data({ serverTimestamps: "estimate" });
     let el = els.get(doc.id);
-    if (!el) { el = buildMsg(doc, d); el.style.animationDelay = Math.min(i, 8) * 45 + "ms"; els.set(doc.id, el); }
+    if (!el) { el = buildMsg(doc, d); el.style.animationDelay = Math.min(i, 8) * 45 + "ms"; els.set(doc.id, el); ro && ro.observe(el); }
     else el.querySelector(".when").textContent = whenText(d);
-    if (list.children[i] !== el) list.insertBefore(el, list.children[i] || null);
+    return el;
   });
+  layoutMsgs();
 }
 </script>
 </body>
