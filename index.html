@@ -105,7 +105,7 @@ main{max-width:780px;margin:auto;padding:4px 18px 48px}
 .seg button{border-radius:0}.seg button:first-child{border-radius:10px 0 0 10px}.seg button:last-child{border-radius:0 10px 10px 0;border-left:0}
 .seg .on[data-t=prompt]{background:var(--p);color:var(--on);border-color:var(--p)}
 .seg .on[data-t=answer]{background:var(--a);color:var(--on);border-color:var(--a)}
-#prev{max-width:100%;max-height:220px;border-radius:12px;display:none;animation:rise .4s var(--ease)}
+#prev{max-width:100%;max-height:220px;border-radius:12px;display:none;cursor:pointer;animation:rise .4s var(--ease)}
 #st{color:var(--mute);font-size:14px;min-height:20px}
 .msg{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:grid;gap:10px;position:relative;overflow:hidden;animation:rise .55s var(--ease) backwards;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s}
 .msg::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--p)}
@@ -119,6 +119,23 @@ main{max-width:780px;margin:auto;padding:4px 18px 48px}
 .pic.loading{display:block;width:100%;height:160px;border:0;background:linear-gradient(90deg,var(--card),var(--card2),var(--card));background-size:200% 100%;animation:shimmer 1.3s linear infinite}
 .msg .row button{padding:6px 11px;font-size:14px}
 .empty{text-align:center;color:var(--mute);margin-top:56px;animation:fade .8s}
+
+/* editor gambar */
+.seg .on[data-f]{background:var(--p);color:var(--on);border-color:var(--p)}
+#ed{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:var(--bg);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);animation:fade .25s}
+.edbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.edbar h2{flex:1;font-size:19px}
+#edstage{min-height:0;display:grid;place-items:center;padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--bg2)}
+#edwrap{position:relative;display:grid;overflow:hidden;border-radius:6px;box-shadow:var(--shadow)}
+#edcv{display:block}
+#edsel{position:absolute;border:2px solid var(--p);box-shadow:0 0 0 9999px rgba(0,0,0,.55);pointer-events:none}
+#edsel i{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--p);border:2px solid var(--on)}
+#edsel i:nth-child(1){left:-8px;top:-8px}#edsel i:nth-child(2){right:-8px;top:-8px}#edsel i:nth-child(3){left:-8px;bottom:-8px}#edsel i:nth-child(4){right:-8px;bottom:-8px}
+.edtools{display:grid;gap:10px;padding:12px 14px;border-top:1px solid var(--line);max-height:46dvh;overflow:auto}
+.edhint,#edst{font-size:13px;color:var(--mute)}
+.edsl{display:flex;align-items:center;gap:8px;flex:1;min-width:160px;font-size:14px;color:var(--mute)}
+input[type=range]{padding:0;border:0;background:transparent;accent-color:var(--p)}
+#edtxt{min-height:72px}
 
 @media(max-width:820px){
   #app{grid-template-columns:1fr}
@@ -178,6 +195,7 @@ main{max-width:780px;margin:auto;padding:4px 18px 48px}
         <textarea id="txt" placeholder="Tulis atau tempel teks. Di PC, Ctrl+V menempel screenshot. Ctrl+Enter untuk kirim."></textarea>
         <img id="prev" alt="Pratinjau gambar">
         <div class="row">
+          <button id="edit" hidden>Edit gambar</button>
           <button id="ocr" hidden>Baca teks dari gambar</button>
           <button id="rm" hidden>Hapus gambar</button>
           <span class="sp"></span>
@@ -187,6 +205,34 @@ main{max-width:780px;margin:auto;padding:4px 18px 48px}
       </div>
       <div id="list"></div>
     </main>
+  </div>
+</div>
+
+<div id="ed" hidden role="dialog" aria-modal="true" aria-label="Edit gambar">
+  <div class="edbar">
+    <h2>Edit gambar</h2>
+    <button id="edcancel">Batal</button>
+    <button class="main" id="eddone">Selesai</button>
+  </div>
+  <div id="edstage"><div id="edwrap"><canvas id="edcv"></canvas><div id="edsel" hidden><i></i><i></i><i></i><i></i></div></div></div>
+  <div class="edtools">
+    <div class="edhint">Seret pada gambar untuk memilih area; geser tepi atau sudutnya untuk mengubah ukuran. “Potong” memangkas gambar, sedangkan “Baca” hanya membaca area terpilih.</div>
+    <div class="row">
+      <button id="edrot">⟳ Putar</button>
+      <button id="edcrop" disabled>✂ Potong</button>
+      <button id="edclr" disabled>Hapus pilihan</button>
+      <span class="sp"></span>
+      <button id="edundo" disabled>Urungkan</button>
+      <button id="edreset">Atur ulang</button>
+    </div>
+    <div class="row">
+      <div class="seg" role="group" aria-label="Filter"><button data-f="asli" class="on">Asli</button><button data-f="jelas">Jelas</button><button data-f="bw">Hitam-putih</button></div>
+      <label class="edsl">Ketajaman <input id="edsharp" type="range" min="0" max="250" value="120"></label>
+    </div>
+    <div class="row"><button class="main" id="edread">Baca seluruh gambar</button></div>
+    <div id="edst" role="status"></div>
+    <textarea id="edtxt" placeholder="Hasil baca muncul di sini dan bisa diedit sebelum dipakai."></textarea>
+    <div class="row"><button id="eduse" disabled>Pakai teks &amp; selesai</button></div>
   </div>
 </div>
 
@@ -213,7 +259,7 @@ const DEFAULT_TITLE = "Chat baru";
 const store = { get(k){ try{ return localStorage.getItem(k) }catch{ return null } }, set(k,v){ try{ localStorage.setItem(k,v) }catch{} } };
 let type = "prompt", img = null, chatId = null, chats = [], creating = false, chatsUnsub = null, msgsUnsub = null;
 const els = new Map(), imgCache = new Map();
-const status = m => $("st").textContent = m || "";
+const status = m => { $("st").textContent = $("edst").textContent = m || ""; };
 
 /* ---------- tema ---------- */
 const THEMES = { samudra: "#081519", gading: "#f4eee2", senja: "#120e1c" };
@@ -322,31 +368,119 @@ document.querySelectorAll(".seg [data-t]").forEach(b => b.onclick = () => {
   type = b.dataset.t;
   document.querySelectorAll(".seg [data-t]").forEach(x => x.classList.toggle("on", x === b));
 });
-function compress(file, max = 1400, q = 0.72){
-  return new Promise((res, rej) => {
-    const im = new Image(), url = URL.createObjectURL(file);
-    im.onload = () => {
-      const s = Math.min(1, max / Math.max(im.width, im.height));
-      const c = document.createElement("canvas");
-      c.width = im.width * s; c.height = im.height * s;
-      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", q));
-    };
-    im.onerror = rej; im.src = url;
-  });
+function loadImg(url){ return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; }); }
+
+/* ---------- pengolahan gambar (murni, bisa diuji tanpa browser) ---------- */
+/*PURE-START*/
+const dims = s => [s.naturalWidth || s.width, s.naturalHeight || s.height];
+const rad = (w, h) => Math.max(1, Math.round(Math.max(w, h) / 1000));   // radius ikut resolusi
+function boxBlur(a, w, h, r){
+  const t = new Float32Array(w * h), o = new Uint8ClampedArray(w * h), n = 2 * r + 1;
+  for (let y = 0; y < h; y++) {
+    const row = y * w; let s = 0;
+    for (let x = -r; x <= r; x++) s += a[row + Math.min(w - 1, Math.max(0, x))];
+    for (let x = 0; x < w; x++) { t[row + x] = s / n; s += a[row + Math.min(w - 1, x + r + 1)] - a[row + Math.max(0, x - r)]; }
+  }
+  for (let x = 0; x < w; x++) {
+    let s = 0;
+    for (let y = -r; y <= r; y++) s += t[Math.min(h - 1, Math.max(0, y)) * w + x];
+    for (let y = 0; y < h; y++) { o[y * w + x] = s / n; s += t[Math.min(h - 1, y + r + 1) * w + x] - t[Math.max(0, y - r) * w + x]; }
+  }
+  return o;
 }
+function stretchLut(g){            // regangkan kontras: 1% tergelap -> hitam, 1% tercerah -> putih
+  const hist = new Uint32Array(256), n = g.length, L = new Uint8Array(256);
+  for (let i = 0; i < n; i++) hist[g[i]]++;
+  let c = 0, lo = 0, hi = 255;
+  while (lo < 255 && (c += hist[lo]) < n * .01) lo++;
+  c = 0; while (hi > 0 && (c += hist[hi]) < n * .01) hi--;
+  if (hi - lo < 8) { lo = 0; hi = 255; }
+  for (let v = 0; v < 256; v++) L[v] = Math.max(0, Math.min(255, (v - lo) * 255 / (hi - lo)));
+  return L;
+}
+function adaptiveBin(g, w, h){     // hitam-putih adaptif (tahan cahaya tidak merata)
+  const W = w + 1, I = new Uint32Array(W * (h + 1)), o = new Uint8ClampedArray(w * h);
+  for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += g[y * w + x]; I[(y + 1) * W + x + 1] = I[y * W + x + 1] + row; } }
+  const hs = Math.max(8, Math.round(Math.min(w, h) / 12) >> 1);
+  for (let y = 0; y < h; y++) {
+    const y0 = Math.max(0, y - hs), y1 = Math.min(h, y + hs + 1);
+    for (let x = 0; x < w; x++) {
+      const x0 = Math.max(0, x - hs), x1 = Math.min(w, x + hs + 1);
+      const sum = I[y1 * W + x1] - I[y0 * W + x1] - I[y1 * W + x0] + I[y0 * W + x0], cnt = (x1 - x0) * (y1 - y0);
+      o[y * w + x] = g[y * w + x] * cnt < sum * .9 ? 0 : 255;
+    }
+  }
+  return o;
+}
+function grayPipeline(d, w, h, amt, bin){   // RGBA -> abu-abu, kontras, balik jika latar gelap, tajamkan, (opsional) hitam-putih
+  const n = w * h, g = new Uint8ClampedArray(n);
+  for (let i = 0, j = 0; j < n; i += 4, j++) g[j] = (d[i] * 77 + d[i + 1] * 151 + d[i + 2] * 28) >> 8;
+  const L = stretchLut(g); let sum = 0;
+  for (let j = 0; j < n; j++) { g[j] = L[g[j]]; sum += g[j]; }
+  if (sum / n < 115) for (let j = 0; j < n; j++) g[j] = 255 - g[j];      // tulisan terang di latar gelap
+  let o = g;
+  if (amt > 0) { const b = boxBlur(g, w, h, rad(w, h)); o = new Uint8ClampedArray(n); for (let j = 0; j < n; j++) o[j] = g[j] + amt * (g[j] - b[j]); }
+  return bin ? adaptiveBin(o, w, h) : o;
+}
+function enhanceRGBA(d, w, h, amt){         // versi berwarna: kontras + ketajaman pada kecerahan saja
+  const n = w * h, g = new Uint8ClampedArray(n);
+  for (let i = 0, j = 0; j < n; i += 4, j++) g[j] = (d[i] * 77 + d[i + 1] * 151 + d[i + 2] * 28) >> 8;
+  const L = stretchLut(g);
+  for (let i = 0, j = 0; j < n; i += 4, j++) { d[i] = L[d[i]]; d[i + 1] = L[d[i + 1]]; d[i + 2] = L[d[i + 2]]; g[j] = L[g[j]]; }
+  if (amt > 0) { const b = boxBlur(g, w, h, rad(w, h)); for (let i = 0, j = 0; j < n; i += 4, j++) { const k = amt * (g[j] - b[j]); d[i] += k; d[i + 1] += k; d[i + 2] += k; } }
+}
+/*PURE-END*/
+
+const MAX_WORK = 2400;                       // sisi terpanjang gambar kerja (untuk edit & baca teks)
+const MAX_SEND = 1400, Q_SEND = 0.72;        // yang dikirim ke Firestore (sama seperti sebelumnya)
+const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+function resize(src, long){
+  const [w, h] = dims(src), k = long / Math.max(w, h);
+  const c = canvasOf(Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k))), x = c.getContext("2d", { willReadFrequently: true });
+  x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);      // latar putih (PNG transparan tidak jadi hitam)
+  x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+const fitMax = (src, max) => resize(src, Math.min(max, Math.max(...dims(src))));
+const fileToCanvas = async file => { const u = URL.createObjectURL(file); try { return fitMax(await loadImg(u), MAX_WORK); } finally { URL.revokeObjectURL(u); } };
+const urlToCanvas = async url => fitMax(await loadImg(url), 4000);
+function grayToCanvas(g, w, h, pad = 0){
+  const c = canvasOf(w + 2 * pad, h + 2 * pad), x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+  const im = x.createImageData(w, h), d = im.data;
+  for (let i = 0, j = 0; j < g.length; i += 4, j++) { d[i] = d[i + 1] = d[i + 2] = g[j]; d[i + 3] = 255; }
+  x.putImageData(im, pad, pad); return c;
+}
+function applyFilter(c, filter, amt){        // ubah kanvas di tempat
+  if (filter !== "jelas" && filter !== "bw") return;
+  const x = c.getContext("2d", { willReadFrequently: true }), w = c.width, h = c.height, im = x.getImageData(0, 0, w, h), d = im.data;
+  if (filter === "jelas") enhanceRGBA(d, w, h, amt);
+  else { const g = grayPipeline(d, w, h, amt, true); for (let i = 0, j = 0; j < g.length; i += 4, j++) d[i] = d[i + 1] = d[i + 2] = g[j]; }
+  x.putImageData(im, 0, 0);
+}
+function packUrl(c, bw){                     // JPEG; untuk hitam-putih pilih PNG bila lebih kecil
+  const j = c.toDataURL("image/jpeg", Q_SEND); if (!bw) return j;
+  const p = c.toDataURL("image/png"); return p.length < j.length ? p : j;
+}
+function renderFinal(base, filter, sharp){
+  const out = fitMax(base, MAX_SEND); applyFilter(out, filter, sharp / 100); return packUrl(out, filter === "bw");
+}
+
+/* ---------- gambar masukan ---------- */
+let pic = null;                              // { orig, work, filter, sharp } -> orig: asli, work: hasil potong/putar (resolusi tinggi)
 async function setImage(file){
   status("Memproses gambar…");
-  try { img = await compress(file); } catch { return status("Gambar tidak bisa dibaca."); }
+  try { const c = await fileToCanvas(file); pic = { orig: c, work: c, filter: "asli", sharp: 120 }; img = renderFinal(c, "asli", 0); }
+  catch { return status("Gambar tidak bisa dibaca."); }
   $("prev").src = img; $("prev").style.display = "block";
-  $("ocr").hidden = $("rm").hidden = false; status("");
+  $("ocr").hidden = $("rm").hidden = $("edit").hidden = false; status("");
 }
-function clearImage(){ img = null; $("prev").style.display = "none"; $("ocr").hidden = $("rm").hidden = true; $("file").value = ""; }
+function clearImage(){ img = pic = null; $("prev").style.display = "none"; $("ocr").hidden = $("rm").hidden = $("edit").hidden = true; $("file").value = ""; }
 $("pick").onclick = () => $("file").click();
 $("file").onchange = e => e.target.files[0] && setImage(e.target.files[0]);
 $("rm").onclick = clearImage;
 document.addEventListener("paste", e => {
-  if ($("app").hidden) return;
+  if ($("app").hidden || ed) return;
   const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith("image/"));
   if (f) { e.preventDefault(); setImage(f); }
 });
@@ -356,18 +490,173 @@ const drop = $("drop");
 drop.addEventListener("drop", e => { const f = [...e.dataTransfer.files].find(f => f.type.startsWith("image/")); if (f) setImage(f); });
 
 /* ---------- OCR ---------- */
-async function runOCR(src, btn){
-  btn.disabled = true;
+// true = model bahasa "best" (lebih akurat untuk teks buram; unduhan pertama lebih besar, lalu tersimpan di cache browser)
+const OCR_BEST_MODEL = true, LANG_PATH = "https://tessdata.projectnaptha.com/4.0.0_best";
+let worker = null, ocrLabel = "", ocrBusy = false;
+async function getWorker(){
+  if (worker) return worker;
+  const logger = m => {
+    if (m.status === "recognizing text") status(ocrLabel + Math.round(m.progress * 100) + "%");
+    else if (/loading/.test(m.status || "") && m.progress != null) status("Menyiapkan pembaca teks (pertama kali agak lama)… " + Math.round(m.progress * 100) + "%");
+  };
+  let w;
+  if (OCR_BEST_MODEL) { try { w = await Tesseract.createWorker("ind+eng", 1, { langPath: LANG_PATH, logger }); } catch { w = null; } }
+  if (!w) w = await Tesseract.createWorker("ind+eng", 1, { logger });
+  try { await w.setParameters({ preserve_interword_spaces: "1", user_defined_dpi: "300" }); } catch {}
+  return worker = w;
+}
+function prepare(src, bin){                  // perbesar, kontras, balik latar gelap, tajamkan, (opsional) hitam-putih, beri margin
+  const [w0, h0] = dims(src), long = Math.max(w0, h0);
+  const big = resize(src, long < 1800 ? Math.min(long * 3, 2200) : Math.min(long, 3200));
+  const w = big.width, h = big.height, d = big.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+  return grayToCanvas(grayPipeline(d, w, h, 1.3, bin), w, h, 30);
+}
+const hint = conf => conf < 60 ? " Hasil kurang yakin: coba potong ke bagian tulisannya saja, atau pakai filter Jelas / Hitam-putih di Edit gambar." : "";
+async function runOCR(src, btn, opts = {}){
+  if (ocrBusy) { status("Masih membaca, tunggu sebentar…"); return { text: "", conf: 0 }; }
+  ocrBusy = true; btn && (btn.disabled = true);
   try {
-    const r = await Tesseract.recognize(src, "ind+eng", { logger: m => m.status === "recognizing text" && status("Membaca teks… " + Math.round(m.progress * 100) + "%") });
-    status(""); return r.data.text.trim();
-  } catch { status("OCR gagal. Coba gambar yang lebih jelas."); return ""; }
-  finally { btn.disabled = false; }
+    const c = typeof src === "string" ? await urlToCanvas(src) : src;
+    status("Menyiapkan pembaca teks…");
+    const w = await getWorker();
+    await w.setParameters({ tessedit_pageseg_mode: opts.block ? "6" : "3" });    // 6 = satu blok teks (area terpilih)
+    let best = null;
+    for (const [k, bin] of [[1, false], [2, true]]) {     // dua percobaan: abu-abu tajam & hitam-putih; ambil yang paling yakin
+      ocrLabel = `Membaca teks (percobaan ${k}/2)… `; status(ocrLabel + "0%");
+      await new Promise(r => setTimeout(r, 20));
+      const r = await w.recognize(prepare(c, bin));
+      const text = r.data.text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(), conf = r.data.confidence || 0;
+      if (!best || !best.text || (text && conf > best.conf)) best = { text, conf };
+    }
+    status(""); return best;
+  } catch { status("OCR gagal. Coba gambar yang lebih jelas."); return { text: "", conf: 0 }; }
+  finally { ocrBusy = false; btn && (btn.disabled = false); }
 }
 $("ocr").onclick = async () => {
-  const t = await runOCR(img, $("ocr"));
-  if (t) { $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + t; status("Teks dari gambar sudah ditambahkan. Silakan periksa dulu."); }
+  const r = await runOCR(pic ? pic.work : img, $("ocr"));
+  if (r.text) { $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + r.text; status("Teks dari gambar sudah ditambahkan. Silakan periksa dulu." + hint(r.conf)); }
   else if (!$("st").textContent) status("Tidak ada teks terbaca.");
+};
+
+/* ---------- editor gambar: potong, tandai area, putar, perjelas ---------- */
+let ed = null, sel = null, drag = null, raf = 0;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const norm = s => ({ x0: Math.min(s.x0, s.x1), y0: Math.min(s.y0, s.y1), x1: Math.max(s.x0, s.x1), y1: Math.max(s.y0, s.y1) });
+function cropCanvas(b, n){
+  const sx = Math.round(n.x0 * b.width), sy = Math.round(n.y0 * b.height);
+  const sw = Math.max(8, Math.min(b.width - sx, Math.round((n.x1 - n.x0) * b.width))), sh = Math.max(8, Math.min(b.height - sy, Math.round((n.y1 - n.y0) * b.height)));
+  const c = canvasOf(sw, sh); c.getContext("2d", { willReadFrequently: true }).drawImage(b, sx, sy, sw, sh, 0, 0, sw, sh); return c;
+}
+function rotated(b){
+  const c = canvasOf(b.height, b.width), x = c.getContext("2d", { willReadFrequently: true });
+  x.translate(c.width, 0); x.rotate(Math.PI / 2); x.drawImage(b, 0, 0); return c;
+}
+function openEditor(){
+  if (!pic) return;
+  ed = { base: pic.work, stack: [], filter: pic.filter, sharp: pic.sharp };
+  sel = null; $("edtxt").value = ""; $("ed").hidden = false; document.body.style.overflow = "hidden";
+  syncEd(); renderPreview();
+}
+function closeEditor(){ $("ed").hidden = true; document.body.style.overflow = ""; ed = null; sel = null; status(""); }
+function syncEd(){
+  $("edcrop").disabled = $("edclr").disabled = !sel;
+  $("edundo").disabled = !ed.stack.length;
+  $("edread").textContent = sel ? "Baca area terpilih" : "Baca seluruh gambar";
+  $("eduse").disabled = !$("edtxt").value.trim();
+  document.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", b.dataset.f === ed.filter));
+  $("edsharp").value = ed.sharp; $("edsharp").disabled = ed.filter === "asli";
+}
+function renderPreview(){
+  if (!ed) return;
+  const b = ed.base, k = Math.min(1, 1100 / Math.max(b.width, b.height)), cv = $("edcv");
+  cv.width = Math.max(1, Math.round(b.width * k)); cv.height = Math.max(1, Math.round(b.height * k));
+  const x = cv.getContext("2d", { willReadFrequently: true });
+  x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height); x.imageSmoothingQuality = "high"; x.drawImage(b, 0, 0, cv.width, cv.height);
+  applyFilter(cv, ed.filter, ed.sharp / 100);
+  fitPreview();
+}
+function fitPreview(){
+  const st = $("edstage"), cv = $("edcv"), cs = getComputedStyle(st);
+  const aw = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), ah = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const k = Math.min(aw / cv.width, ah / cv.height, 3);
+  cv.style.width = Math.floor(cv.width * k) + "px"; cv.style.height = Math.floor(cv.height * k) + "px";
+  drawSel();
+}
+function drawSel(){
+  const el = $("edsel"); if (!sel) { el.hidden = true; return; }
+  const n = norm(sel), W = $("edcv").clientWidth, H = $("edcv").clientHeight;
+  el.hidden = false; Object.assign(el.style, { left: n.x0 * W + "px", top: n.y0 * H + "px", width: (n.x1 - n.x0) * W + "px", height: (n.y1 - n.y0) * H + "px" });
+}
+function setBase(c){ ed.stack.push(ed.base); if (ed.stack.length > 3) ed.stack.shift(); ed.base = c; sel = null; syncEd(); renderPreview(); }
+const pt = e => { const r = $("edcv").getBoundingClientRect(); return { x: clamp((e.clientX - r.left) / r.width), y: clamp((e.clientY - r.top) / r.height), r }; };
+$("edstage").addEventListener("pointerdown", e => {
+  if (!ed) return;
+  const p = pt(e), tx = 26 / p.r.width, ty = 26 / p.r.height; drag = null;
+  if (sel) {
+    const n = norm(sel);
+    if (p.x > n.x0 - tx && p.x < n.x1 + tx && p.y > n.y0 - ty && p.y < n.y1 + ty) {
+      let l = Math.abs(p.x - n.x0) < tx, r = Math.abs(p.x - n.x1) < tx, t = Math.abs(p.y - n.y0) < ty, b = Math.abs(p.y - n.y1) < ty;
+      if (l && r) { l = Math.abs(p.x - n.x0) <= Math.abs(p.x - n.x1); r = !l; }
+      if (t && b) { t = Math.abs(p.y - n.y0) <= Math.abs(p.y - n.y1); b = !t; }
+      if (l || r || t || b) drag = { l, r, t, b, n };
+      else if (p.x > n.x0 && p.x < n.x1 && p.y > n.y0 && p.y < n.y1) drag = { move: true, n, px: p.x, py: p.y };
+    }
+  }
+  if (!drag) { sel = { x0: p.x, y0: p.y, x1: p.x, y1: p.y }; drag = { fresh: true }; }
+  try { $("edstage").setPointerCapture(e.pointerId); } catch {}
+  drawSel();
+});
+$("edstage").addEventListener("pointermove", e => {
+  if (!drag) return;
+  const p = pt(e);
+  if (drag.fresh) { sel.x1 = p.x; sel.y1 = p.y; }
+  else if (drag.move) {
+    const n = drag.n, w = n.x1 - n.x0, h = n.y1 - n.y0, x0 = clamp(n.x0 + p.x - drag.px, 0, 1 - w), y0 = clamp(n.y0 + p.y - drag.py, 0, 1 - h);
+    sel = { x0, y0, x1: x0 + w, y1: y0 + h };
+  } else {
+    const n = { ...drag.n }; if (drag.l) n.x0 = p.x; if (drag.r) n.x1 = p.x; if (drag.t) n.y0 = p.y; if (drag.b) n.y1 = p.y; sel = n;
+  }
+  drawSel();
+});
+const endDrag = () => {
+  if (!drag) return; drag = null;
+  if (sel) { const n = norm(sel); if (n.x1 - n.x0 < .03 || n.y1 - n.y0 < .03) sel = null; }
+  if (ed) { drawSel(); syncEd(); }
+};
+$("edstage").addEventListener("pointerup", endDrag);
+$("edstage").addEventListener("pointercancel", endDrag);
+window.addEventListener("resize", () => ed && fitPreview());
+document.addEventListener("keydown", e => e.key === "Escape" && ed && closeEditor());
+
+$("edit").onclick = $("prev").onclick = openEditor;
+$("edrot").onclick = () => setBase(rotated(ed.base));
+$("edcrop").onclick = () => setBase(cropCanvas(ed.base, norm(sel)));
+$("edclr").onclick = () => { sel = null; drawSel(); syncEd(); };
+$("edundo").onclick = () => { if (!ed.stack.length) return; ed.base = ed.stack.pop(); sel = null; syncEd(); renderPreview(); };
+$("edreset").onclick = () => { ed.filter = "asli"; ed.sharp = 120; setBase(pic.orig); };
+document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { ed.filter = b.dataset.f; syncEd(); renderPreview(); });
+$("edsharp").oninput = e => { ed.sharp = +e.target.value; cancelAnimationFrame(raf); raf = requestAnimationFrame(renderPreview); };
+$("edtxt").addEventListener("input", () => ed && ($("eduse").disabled = !$("edtxt").value.trim()));
+$("edcancel").onclick = closeEditor;
+async function commitEditor(){
+  status("Menerapkan perubahan…"); await new Promise(r => setTimeout(r, 30));
+  try {
+    pic.work = ed.base; pic.filter = ed.filter; pic.sharp = ed.sharp;
+    img = renderFinal(ed.base, ed.filter, ed.sharp); $("prev").src = img;
+    closeEditor();
+  } catch (e) { status("Gagal menerapkan: " + e.message); }
+}
+$("eddone").onclick = commitEditor;
+$("edread").onclick = async () => {
+  const area = sel ? cropCanvas(ed.base, norm(sel)) : ed.base;
+  const r = await runOCR(area, $("edread"), { block: !!sel });
+  if (r.text) { $("edtxt").value = ($("edtxt").value ? $("edtxt").value + "\n\n" : "") + r.text; syncEd(); status("Selesai dibaca. Periksa hasilnya, lalu pilih “Pakai teks & selesai”." + hint(r.conf)); }
+  else if (!$("st").textContent) status("Tidak ada teks terbaca.");
+};
+$("eduse").onclick = async () => {
+  const t = $("edtxt").value.trim(); if (!t) return;
+  $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + t;
+  await commitEditor(); status("Teks sudah ditambahkan ke kotak teks.");
 };
 
 /* ---------- kirim: gambar dipotong jadi chunks ---------- */
@@ -439,7 +728,7 @@ function buildMsg(doc, d){
       try { const u = await loadImage(doc.ref, n); const blob = await (await fetch(u)).blob(); await navigator.clipboard.write([new ClipboardItem({ "image/png": await toPng(blob) })]); b.textContent = "Tersalin"; }
       catch { b.textContent = "Tahan gambar untuk menyalin"; }
     });
-    add("Baca teks", async b => { const t = await runOCR(await loadImage(doc.ref, n), b); if (t) { await copy(t, b); status("Teks hasil OCR sudah disalin."); } });
+    add("Baca teks", async b => { const r = await runOCR(await loadImage(doc.ref, n), b); if (r.text) { await copy(r.text, b); status("Teks hasil OCR sudah disalin." + hint(r.conf)); } else if (!$("st").textContent) status("Tidak ada teks terbaca."); });
   }
   add("Hapus", async () => {
     if (!confirm("Hapus pesan ini?")) return;
