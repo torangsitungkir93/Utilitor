@@ -226,6 +226,48 @@ main{flex:1;min-height:0;overflow:auto;width:100%;max-width:1200px;margin:0 auto
   #colL,#colR{overflow:visible;padding:0}
   .msg{margin-bottom:6px}
 }
+/* ===== iPhone, layar sentuh, dan lebar laptop ===== */
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);--vh:100dvh}
+html.kb{--sab:0px}
+html{-webkit-text-size-adjust:100%}
+body{padding:var(--sat) var(--sar) var(--sab) var(--sal);-webkit-tap-highlight-color:transparent}
+button,.seg,label{touch-action:manipulation}
+body:has(#app:not([hidden])){position:fixed;inset:0;width:100%;overflow:hidden;overscroll-behavior:none}
+#app{min-height:0;height:calc(var(--vh) - var(--sat) - var(--sab));grid-template-rows:minmax(0,1fr)}
+#side{height:auto}
+#chatview{height:auto;min-height:0}
+main{max-width:min(1760px,100%);overflow-x:hidden}
+.msg{grid-template-columns:minmax(0,1fr)}
+.txt,.md{overflow-wrap:anywhere}
+.md th,.md td{overflow-wrap:normal;word-break:normal}
+.meta{flex-wrap:wrap;row-gap:2px}
+#ed{inset:auto;top:0;left:0;right:0;height:var(--vh);padding:var(--sat) var(--sar) var(--sab) var(--sal)}
+#edstage,.pic,#prev{-webkit-touch-callout:none}
+button.busy{pointer-events:none}
+button.busy::before{content:"";display:inline-block;width:12px;height:12px;margin-right:7px;vertical-align:-1px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+@media(hover:none){.orb{animation:none}.o1,.o2,.o3{filter:blur(60px)}}
+@media(pointer:coarse){input,textarea{font-size:16px}}      /* iOS memperbesar halaman bila huruf kolom < 16px */
+@media(max-width:759px){
+  body{font-size:15px}
+  button{padding:8px 13px;font-size:14px}
+  button.icon{width:38px;height:38px}
+  .ib{width:34px;height:34px}.ib svg{width:17px;height:17px}
+  .msg .ib{width:30px;height:30px}.msg .ib svg{width:16px;height:16px}
+  header{padding:6px 10px;gap:6px}header h2{font-size:18px}
+  main{padding:2px 10px 10px}
+  .box{padding:10px;gap:8px;border-radius:16px}
+  textarea{min-height:92px;padding-right:80px}
+  .tabtns{top:6px;right:6px}
+  #prev{max-height:96px}
+  .seg button{padding:8px 15px}
+  .msg{padding:10px 12px 11px 14px;border-radius:14px;gap:6px}
+  .meta{font-size:12px}.tag{font-size:11.5px;padding:2px 9px}
+  .cb code{font-size:12.5px}
+  #side{padding-top:calc(14px + var(--sat));padding-bottom:calc(14px + var(--sab))}
+  .edbar{padding:8px 12px}.edtools{padding:10px 12px}
+  .edtools .ib{width:38px;height:38px}
+  #edstage{padding:6px}
+}
 @media (hover:hover) and (pointer:fine){#paste{display:none}}
 
 @media(max-width:820px){
@@ -801,12 +843,14 @@ $("edsharp").oninput = e => { ed.sharp = +e.target.value; cancelAnimationFrame(r
 $("edtxt").addEventListener("input", () => ed && ($("eduse").disabled = !$("edtxt").value.trim()));
 $("edcancel").onclick = closeEditor;
 async function commitEditor(){
+  const bt = [$("eddone"), $("eduse")]; bt.forEach(b => b.disabled = true); $("eddone").classList.add("busy");
   status("Menerapkan perubahan…"); await new Promise(r => setTimeout(r, 30));
   try {
     pic.work = ed.base; pic.filter = ed.filter; pic.sharp = ed.sharp; pic.marks = cloneMarks(ed.marks);
     img = renderFinal(ed.base, ed.filter, ed.sharp, pic.marks); $("prev").src = img; ocrTitle();
     closeEditor();
   } catch (e) { status("Gagal menerapkan: " + e.message); }
+  finally { $("eddone").classList.remove("busy"); $("eddone").disabled = false; $("eduse").disabled = !$("edtxt").value.trim(); }
 }
 $("eddone").onclick = commitEditor;
 $("edread").onclick = async () => {
@@ -819,6 +863,40 @@ $("eduse").onclick = async () => {
   $("txt").value = ($("txt").value ? $("txt").value + "\n\n" : "") + t;
   await commitEditor(); status("Teks sudah ditambahkan ke kotak teks.");
 };
+
+/* ---------- kirim: gambar dipotong jadi chunks ---------- */
+let sending = false;
+function lockUI(on){                         // saat mengirim: tombol dikunci + indikator loading
+  ["send", "paste", "pick", "edit", "ocr", "rm"].forEach(id => $(id).disabled = on);
+  $("txt").readOnly = on; $("send").classList.toggle("busy", on); $("send").textContent = on ? "Mengirim…" : "Kirim";
+}
+$("send").onclick = async () => {
+  if (sending) return;
+  const text = $("txt").value.trim();
+  if (!chatId) return status("Chat belum siap.");
+  if (!text && !img) return status("Isi teks atau tambahkan gambar dulu.");
+  sending = true; lockUI(true);
+  status(img ? `Mengirim gambar (${Math.max(1, Math.round(img.length * .75 / 1024))} KB)…` : "Mengirim…");
+  const slow = setTimeout(() => status("Koneksi lambat, masih mengirim… jangan tutup halaman."), 8000);
+  try {
+    const chat = db.collection("chats").doc(chatId), mref = chat.collection("messages").doc(), b = db.batch();
+    let n = 0;
+    if (img) {
+      for (let i = 0; i < img.length; i += CHUNK, n++)
+        b.set(mref.collection("chunks").doc(String(n).padStart(4, "0")), { i: n, d: img.slice(i, i + CHUNK) });
+      imgCache.set(mref.id, Promise.resolve(img));
+    }
+    b.set(mref, { text, type, device, imgChunks: n, imgSize: img ? img.length : 0, createdAt: TS() });
+    const cur = chats.find(c => c.id === chatId);
+    const upd = { updatedAt: TS(), last: (text || "🖼 Gambar").replace(/\s+/g, " ").slice(0, 80) };
+    if (!cur || cur.title === DEFAULT_TITLE) upd.title = (text || "Gambar").replace(/\s+/g, " ").slice(0, 32);
+    b.update(chat, upd);
+    await b.commit();
+    $("txt").value = ""; clearImage(); status("Terkirim.");
+  } catch (e) { status("Gagal kirim: " + e.message); }
+  finally { clearTimeout(slow); sending = false; lockUI(false); }
+};
+$("txt").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("send").click(); } });
 
 /* ---------- tempel: dari clipboard & dari ChatGPT (format ikut) ---------- */
 /*HTML2MD-START*/
@@ -1077,10 +1155,11 @@ function buildMsg(doc, d){
     });
     add("scan", "Baca teks dari gambar", async b => { const r = await runOCR(await loadImage(doc.ref, n), b); if (r.text) { await copy(r.text, b); status("Teks hasil OCR sudah disalin." + hint(r.conf)); } else if (!$("st").textContent) status("Tidak ada teks terbaca."); });
   }
-  add("trash", "Hapus pesan", async () => {
+  add("trash", "Hapus pesan", async b => {
     if (!confirm("Hapus pesan ini?")) return;
+    b.disabled = true; b.classList.add("busy");
     try { const cs = await doc.ref.collection("chunks").get(); await commitDeletes([...cs.docs.map(x => x.ref), doc.ref]); }
-    catch (e) { status("Gagal menghapus: " + e.message); }
+    catch (e) { status("Gagal menghapus: " + e.message); b.disabled = false; b.classList.remove("busy"); }
   }, "del");
   return el;
 }
@@ -1126,6 +1205,16 @@ function render(snap){
     return el;
   });
   layoutMsgs();
+}
+/* ---------- iPhone: ikuti tinggi layar yang terlihat (saat keyboard muncul layout tidak bergeser) ---------- */
+if (window.visualViewport) {
+  const vv = window.visualViewport, root = document.documentElement;
+  const fitVV = () => {
+    root.style.setProperty("--vh", vv.height + "px");
+    root.classList.toggle("kb", window.innerHeight - vv.height > 120);
+    if (vv.offsetTop > 0 || vv.pageTop > 0) window.scrollTo(0, 0);
+  };
+  vv.addEventListener("resize", fitVV); vv.addEventListener("scroll", fitVV); fitVV();
 }
 </script>
 </body>
