@@ -20,6 +20,14 @@
 html[data-theme=samudra]{--bg:#081519;--bg2:#0e2229;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.1);--ink:#e9f2f3;--mute:#8da9b0;--line:rgba(255,255,255,.12);--p:#5fd0cb;--p-bg:rgba(95,208,203,.14);--a:#f0b866;--a-bg:rgba(240,184,102,.15);--danger:#ff8a80;--on:#06161a;--orb:.34;--shadow:0 12px 40px rgba(0,0,0,.35);color-scheme:dark}
 html[data-theme=gading]{--bg:#f4eee2;--bg2:#fbf8f2;--card:rgba(255,255,255,.72);--card2:#fff;--ink:#1c2b2f;--mute:#667a80;--line:rgba(28,43,47,.13);--p:#0e6b6b;--p-bg:rgba(14,107,107,.1);--a:#a8620f;--a-bg:rgba(168,98,15,.11);--danger:#b3261e;--on:#fff;--orb:.17;--shadow:0 12px 32px rgba(60,50,30,.13);color-scheme:light}
 html[data-theme=senja]{--bg:#120e1c;--bg2:#1c1632;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.1);--ink:#f0ebf8;--mute:#a699bf;--line:rgba(255,255,255,.12);--p:#b79cff;--p-bg:rgba(183,156,255,.15);--a:#ffb878;--a-bg:rgba(255,184,120,.15);--danger:#ff8fa3;--on:#140d24;--orb:.34;--shadow:0 12px 40px rgba(0,0,0,.4);color-scheme:dark}
+/* tema Infinity: terinspirasi nuansa platform enterprise (konten terang kebiruan, sidebar navy, aksen biru-ungu) */
+html[data-theme=infinity]{--bg:#eef1f7;--bg2:#ffffff;--card:rgba(255,255,255,.94);--card2:#ffffff;--ink:#12172b;--mute:#586180;--line:rgba(18,23,43,.13);--p:#1f4fd8;--p-bg:rgba(31,79,216,.10);--a:#7c3aed;--a-bg:rgba(124,58,237,.10);--danger:#c62828;--on:#ffffff;--orb:.10;--shadow:0 10px 28px rgba(18,23,43,.10);--serif:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}
+html[data-theme=infinity] #side{--ink:#e9edff;--mute:#9ba6d6;--line:rgba(255,255,255,.14);--card:rgba(255,255,255,.07);--card2:rgba(255,255,255,.13);--p:#86a8ff;--p-bg:rgba(134,168,255,.18);--on:#0b1030;--danger:#ff8a8a;background:linear-gradient(180deg,#0b1030,#141b48);color:var(--ink);backdrop-filter:none;-webkit-backdrop-filter:none;border-right-color:transparent}
+html[data-theme=infinity] .brand h1::after{content:" ∞";color:var(--p);font-weight:700}
+html[data-theme=infinity] .lcard h1::after{content:" ∞";color:var(--a);font-weight:700}
+html[data-theme=infinity] .msg{box-shadow:0 1px 2px rgba(18,23,43,.07)}
+html[data-theme=infinity] .box{box-shadow:var(--shadow)}
+.themes [data-th=infinity]{background:linear-gradient(135deg,#0b1030 50%,#1f4fd8 50%)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{min-height:100%}
@@ -294,7 +302,7 @@ button.busy::before{content:"";display:inline-block;width:12px;height:12px;margi
     <input id="pw" type="password" placeholder="Kata sandi" autocomplete="current-password">
     <button class="main" id="go">Masuk</button>
     <div id="lerr" role="alert"></div>
-    <div class="themes" role="group" aria-label="Tema"><button data-th="samudra" aria-label="Tema Samudra"></button><button data-th="gading" aria-label="Tema Gading"></button><button data-th="senja" aria-label="Tema Senja"></button></div>
+    <div class="themes" role="group" aria-label="Tema"><button data-th="samudra" aria-label="Tema Samudra"></button><button data-th="gading" aria-label="Tema Gading"></button><button data-th="senja" aria-label="Tema Senja"></button><button data-th="infinity" aria-label="Tema Infinity"></button></div>
     <p><small class="ver"></small></p>
   </div>
 </section>
@@ -305,7 +313,7 @@ button.busy::before{content:"";display:inline-block;width:12px;height:12px;margi
     <button class="main" id="newchat">＋ Chat baru</button>
     <nav id="chats" aria-label="Daftar chat"></nav>
     <div class="sfoot">
-      <div class="themes" role="group" aria-label="Tema"><button data-th="samudra" aria-label="Tema Samudra"></button><button data-th="gading" aria-label="Tema Gading"></button><button data-th="senja" aria-label="Tema Senja"></button></div>
+      <div class="themes" role="group" aria-label="Tema"><button data-th="samudra" aria-label="Tema Samudra"></button><button data-th="gading" aria-label="Tema Gading"></button><button data-th="senja" aria-label="Tema Senja"></button><button data-th="infinity" aria-label="Tema Infinity"></button></div>
       <button id="out">Keluar</button>
     </div>
   </aside>
@@ -409,7 +417,7 @@ const els = new Map(), imgCache = new Map();
 const status = m => { $("st").textContent = $("edst").textContent = m || ""; };
 
 /* ---------- tema ---------- */
-const THEMES = { samudra: "#081519", gading: "#f4eee2", senja: "#120e1c" };
+const THEMES = { samudra: "#081519", gading: "#f4eee2", senja: "#120e1c", infinity: "#eef1f7" };
 function setTheme(t){
   if (!THEMES[t]) t = "samudra";
   document.documentElement.dataset.theme = t;
