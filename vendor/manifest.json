@@ -1,0 +1,40 @@
+{
+ "built": "2026-11-20T01:00:41.694Z",
+ "tesseract": "5.1.1",
+ "core": "5.1.1",
+ "langs": "best",
+ "files": [
+  {
+   "path": "vendor/tesseract/tesseract.min.js",
+   "size": 66695
+  },
+  {
+   "path": "vendor/tesseract/worker.min.js",
+   "size": 123724
+  },
+  {
+   "path": "vendor/tesseract/core/tesseract-core-simd-lstm.wasm.js",
+   "size": 3938657
+  },
+  {
+   "path": "vendor/tesseract/core/tesseract-core-simd-lstm.wasm",
+   "size": 2859709
+  },
+  {
+   "path": "vendor/tesseract/core/tesseract-core-lstm.wasm.js",
+   "size": 3938277
+  },
+  {
+   "path": "vendor/tesseract/core/tesseract-core-lstm.wasm",
+   "size": 2859424
+  },
+  {
+   "path": "vendor/lang/ind.traineddata.gz",
+   "size": 7455615
+  },
+  {
+   "path": "vendor/lang/eng.traineddata.gz",
+   "size": 12821300
+  }
+ ]
+}

@@ -1,0 +1,1 @@
+Folder ini diisi dari vendor.zip hasil ambil-aset-ocr.html (lihat BACA-SAYA.txt).

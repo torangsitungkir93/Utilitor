@@ -1,0 +1,28 @@
+OCR OFFLINE UTILITOR  (untuk GitHub Pages, tanpa Node, tanpa install apa pun)
+
+SEKALI SAJA, di laptop dengan internet:
+
+1. Buka file  ambil-aset-ocr.html  dengan klik dua kali (terbuka di browser).
+   Pilih "Akurat" lalu tekan "Mulai unduh". Tunggu sampai muncul "Selesai"
+   dan file  vendor.zip  terunduh.
+
+2. Ekstrak vendor.zip sehingga muncul folder  vendor.
+
+3. Di repo GitHub: Add file > Upload files > seret folder  vendor  (sejajar
+   dengan index.html) > Commit changes.
+   (Sekalian unggah index.html, sw.js, dan file lain dari zip utama bila belum.)
+
+4. Tunggu GitHub Pages selesai membangun (sekitar 1 menit), lalu buka aplikasi.
+   OCR offline disiapkan sendiri di latar belakang, dan setelah itu scan jalan
+   tanpa internet dan tanpa menunggu.
+
+CATATAN
+- iPhone: tambahkan ke Layar Utama (Bagikan > Tambah ke Layar Utama) supaya iOS
+  tidak menghapus cache bila aplikasi tidak dibuka lebih dari seminggu.
+- Kalau folder vendor belum ada, aplikasi tetap jalan seperti biasa (memakai CDN).
+- Kalau suatu saat mengunduh ulang vendor, cukup ganti foldernya; perangkat akan
+  memperbarui sendiri.
+- Bila repo-mu publik, semua file di repo ikut terlihat publik, termasuk
+  firestore.rules (berisi emailmu). Sebaiknya jangan unggah file itu ke repo;
+  aturan Firestore cukup disalin ke Firebase Console.
+- Pengguna Node boleh memakai:  node ambil-aset-ocr.js  (hasilnya sama).

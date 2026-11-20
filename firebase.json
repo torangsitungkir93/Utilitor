@@ -1,1 +1,1 @@
-{"hosting":{"public":".","ignore":["firebase.json","release.js","package.json","firestore.rules","**/.*"]},"firestore":{"rules":"firestore.rules"}}
+{"hosting":{"public":".","ignore":["firebase.json","release.js","package.json","firestore.rules","ambil-aset-ocr.js","BACA-SAYA.txt","**/.*"],"headers":[{"source":"/sw.js","headers":[{"key":"Cache-Control","value":"no-cache"}]},{"source":"/vendor/**","headers":[{"key":"Cache-Control","value":"public, max-age=604800"}]}]},"firestore":{"rules":"firestore.rules"}}

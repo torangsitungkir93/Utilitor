@@ -208,7 +208,7 @@ main{flex:1;min-height:0;overflow:auto;width:100%;max-width:1200px;margin:0 auto
 .meta{font-size:11.5px;gap:6px}
 .tag{padding:1px 8px;font-size:11px}
 .acts{margin-left:auto;display:flex;gap:1px}
-.pic{max-height:190px;object-fit:contain;cursor:zoom-in;border-radius:8px}
+.pic{max-height:340px;object-fit:contain;cursor:zoom-in;border-radius:8px}
 .pic.big{max-height:none;cursor:zoom-out}
 .pic.loading{height:90px}
 .md h1{font-size:1.25em}.md h2{font-size:1.15em}.md h3{font-size:1.06em}
@@ -250,7 +250,7 @@ main{max-width:min(1760px,100%);overflow-x:hidden}
 .md th,.md td{overflow-wrap:normal;word-break:normal}
 .meta{flex-wrap:wrap;row-gap:2px}
 #ed{inset:auto;top:0;left:0;right:0;height:var(--vh);padding:var(--sat) var(--sar) var(--sab) var(--sal)}
-#edstage,.pic,#prev{-webkit-touch-callout:none}
+#edstage{-webkit-touch-callout:none}
 button.busy{pointer-events:none}
 button.busy::before{content:"";display:inline-block;width:12px;height:12px;margin-right:7px;vertical-align:-1px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
 @media(hover:none){.orb{animation:none}.o1,.o2,.o3{filter:blur(60px)}}
@@ -267,6 +267,8 @@ button.busy::before{content:"";display:inline-block;width:12px;height:12px;margi
   textarea{min-height:92px;padding-right:80px}
   .tabtns{top:6px;right:6px}
   #prev{max-height:96px}
+  .pic{max-height:none;cursor:auto}
+  .pic.loading{height:160px}
   .seg button{padding:8px 15px}
   .msg{padding:10px 12px 11px 14px;border-radius:14px;gap:6px}
   .meta{font-size:12px}.tag{font-size:11.5px;padding:2px 9px}
@@ -391,10 +393,24 @@ button.busy::before{content:"";display:inline-block;width:12px;height:12px;margi
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+<script>
+/* Tesseract: pakai salinan lokal (vendor/) bila ada, kalau tidak CDN. Dimuat sekali, saat pertama dibutuhkan. */
+const TESS_CDN = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+let tessLocal = false, tessPromise = null;
+function loadTesseract(){
+  if (window.Tesseract) return Promise.resolve();
+  return tessPromise || (tessPromise = new Promise((ok, no) => {
+    const add = (src, done) => { const t = document.createElement("script"); t.src = src; t.onload = () => done(true); t.onerror = () => { t.remove(); done(false); }; document.head.append(t); };
+    add("vendor/tesseract/tesseract.min.js", good => {
+      if (good && window.Tesseract) { tessLocal = true; return ok(); }
+      add(TESS_CDN, g2 => g2 && window.Tesseract ? ok() : (tessPromise = null, no(new Error("Tesseract tidak termuat"))));
+    });
+  }));
+}
+</script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyC0MVr263bQtDWNEPqBFraeJAcfqexQE5s",
@@ -638,7 +654,7 @@ async function setImage(file){
   status("Memproses gambar…");
   try { const c = await fileToCanvas(file); pic = { orig: c, work: c, filter: "asli", sharp: 120, marks: [] }; img = renderFinal(c, "asli", 0); }
   catch { return status("Gambar tidak bisa dibaca."); }
-  $("prev").src = img; showPic(true); ocrTitle(); status("");
+  $("prev").src = img; showPic(true); ocrTitle(); status(""); warmOCR();
 }
 function clearImage(){ img = pic = null; showPic(false); $("file").value = ""; }
 $("pick").onclick = () => $("file").click();
@@ -657,19 +673,27 @@ drop.addEventListener("drop", e => { const f = [...e.dataTransfer.files].find(f 
 /* ---------- OCR ---------- */
 // true = model bahasa "best" (lebih akurat untuk teks buram; unduhan pertama lebih besar, lalu tersimpan di cache browser)
 const OCR_BEST_MODEL = true, LANG_PATH = "https://tessdata.projectnaptha.com/4.0.0_best";
-let worker = null, ocrLabel = "", ocrBusy = false;
+let worker = null, workerP = null, ocrLabel = "", ocrBusy = false;
 async function getWorker(){
   if (worker) return worker;
-  const logger = m => {
-    if (m.status === "recognizing text") status(ocrLabel + Math.round(m.progress * 100) + "%");
-    else if (/loading/.test(m.status || "") && m.progress != null) status("Menyiapkan pembaca teks (pertama kali agak lama)… " + Math.round(m.progress * 100) + "%");
-  };
-  let w;
-  if (OCR_BEST_MODEL) { try { w = await Tesseract.createWorker("ind+eng", 1, { langPath: LANG_PATH, logger }); } catch { w = null; } }
-  if (!w) w = await Tesseract.createWorker("ind+eng", 1, { logger });
-  try { await w.setParameters({ preserve_interword_spaces: "1", user_defined_dpi: "300" }); } catch {}
-  return worker = w;
+  if (workerP) return workerP;
+  return workerP = (async () => {
+    await loadTesseract();
+    const logger = m => {
+      if (!ocrBusy) return;                                  // pemanasan di latar belakang: tidak menampilkan status
+      if (m.status === "recognizing text") status(ocrLabel + Math.round(m.progress * 100) + "%");
+      else if (/loading/.test(m.status || "") && m.progress != null) status((tessLocal ? "Menyiapkan pembaca teks… " : "Menyiapkan pembaca teks (pertama kali agak lama)… ") + Math.round(m.progress * 100) + "%");
+    };
+    const abs = p => new URL(p, location.href).href;
+    let w = null;
+    if (tessLocal) { try { w = await Tesseract.createWorker("ind+eng", 1, { workerPath: abs("vendor/tesseract/worker.min.js"), corePath: abs("vendor/tesseract/core"), langPath: abs("vendor/lang"), cacheMethod: "none", logger }); } catch { w = null; } }
+    if (!w && OCR_BEST_MODEL) { try { w = await Tesseract.createWorker("ind+eng", 1, { langPath: LANG_PATH, logger }); } catch { w = null; } }
+    if (!w) w = await Tesseract.createWorker("ind+eng", 1, { logger });
+    try { await w.setParameters({ preserve_interword_spaces: "1", user_defined_dpi: "300" }); } catch {}
+    return worker = w;
+  })().finally(() => { workerP = null; });
 }
+const warmOCR = () => { if (!worker && !workerP) getWorker().catch(() => {}); };   // siapkan lebih awal saat pengguna mulai memakai gambar
 function prepare(src, bin){                  // perbesar, kontras, balik latar gelap, tajamkan, (opsional) hitam-putih, beri margin
   const [w0, h0] = dims(src), long = Math.max(w0, h0);
   const big = resize(src, long < 1800 ? Math.min(long * 3, 2200) : Math.min(long, 3200));
@@ -735,6 +759,7 @@ function rotated(b){
 }
 function openEditor(){
   if (!pic) return;
+  warmOCR();
   ed = { base: pic.work, stack: [], filter: pic.filter, sharp: pic.sharp, mode: "mark", marks: cloneMarks(pic.marks), active: -1 };
   sel = null; $("edtxt").value = ""; $("ed").hidden = false; document.body.style.overflow = "hidden";
   syncEd(); renderPreview();
@@ -1214,6 +1239,32 @@ function render(snap){
   });
   layoutMsgs();
 }
+/* ---------- OCR offline: siapkan aset di latar belakang + service worker ---------- */
+let preMsg = "";
+async function prefetchOCR(){
+  if (!("caches" in window) || !/^https?:$/.test(location.protocol) || (navigator.connection && navigator.connection.saveData)) return;
+  const show = t => { const el = $("st"); if (!el.textContent || el.textContent === preMsg) { el.textContent = preMsg = t; } };
+  try {
+    const r = await fetch("vendor/manifest.json", { cache: "no-cache" }); if (!r.ok) return;
+    const man = await r.json(), files = man.files || [];
+    if (localStorage.getItem("ocrBuilt") !== man.built) { await caches.delete("utilitor-vendor-v1"); localStorage.removeItem("ocrBuilt"); }   // aset diunduh ulang: buang salinan lama
+    const cache = await caches.open("utilitor-vendor-v1"), todo = [];
+    for (const f of files) if (!(await cache.match(f.path))) todo.push(f);
+    if (!todo.length) { localStorage.setItem("ocrBuilt", man.built); return; }
+    const mbs = Math.round(todo.reduce((n, f) => n + f.size, 0) / 1048576); let done = 0;
+    for (const f of todo) {
+      show(`Menyiapkan OCR offline… ${done}/${todo.length} (${mbs} MB)`);
+      const res = await fetch(f.path); if (!res.ok) throw new Error(res.status);
+      await cache.put(f.path, res); done++;
+    }
+    localStorage.setItem("ocrBuilt", man.built); show("OCR offline siap."); setTimeout(() => show(""), 3000);
+  } catch { const el = $("st"); if (el.textContent === preMsg) el.textContent = preMsg = ""; }
+}
+window.addEventListener("load", () => {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+  setTimeout(prefetchOCR, 4000);
+});
+
 /* ---------- iPhone: ikuti tinggi layar yang terlihat (saat keyboard muncul layout tidak bergeser) ---------- */
 if (window.visualViewport) {
   const vv = window.visualViewport, root = document.documentElement;
