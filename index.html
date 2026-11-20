@@ -223,9 +223,10 @@ main{flex:1;min-height:0;overflow:auto;width:100%;max-width:1200px;margin:0 auto
 .edhint{font-size:12px;line-height:1.35}
 #edtxt{min-height:60px}
 #edmarks{position:absolute;inset:0;pointer-events:none}
-.mk{position:absolute;border:2px solid #e5322d;background:rgba(229,50,45,.12);border-radius:2px}
+.mk{position:absolute;border:2px solid #e5322d;background:none;border-radius:2px}
+#edpen{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .mk[data-n]::before{content:attr(data-n);position:absolute;left:-2px;top:-2px;min-width:17px;height:17px;padding:0 4px;background:#e5322d;color:#fff;font:700 11px/17px var(--sans);text-align:center;border-radius:2px 0 6px 0}
-.mk.act{border-width:3px;background:rgba(229,50,45,.18)}
+.mk.act{border-width:3px}
 .mk i{position:absolute;width:13px;height:13px;border-radius:50%;background:#e5322d;border:2px solid #fff}
 .mk i:nth-child(1){left:-8px;top:-8px}.mk i:nth-child(2){right:-8px;top:-8px}.mk i:nth-child(3){left:-8px;bottom:-8px}.mk i:nth-child(4){right:-8px;bottom:-8px}
 @media(max-width:759px){
@@ -364,11 +365,11 @@ button.busy::before{content:"";display:inline-block;width:12px;height:12px;margi
     <button id="edcancel">Batal</button>
     <button class="main" id="eddone">Selesai</button>
   </div>
-  <div id="edstage"><div id="edwrap"><canvas id="edcv"></canvas><div id="edmarks"></div><div id="edsel" hidden><i></i><i></i><i></i><i></i></div></div></div>
+  <div id="edstage"><div id="edwrap"><canvas id="edcv"></canvas><canvas id="edpen"></canvas><div id="edmarks"></div><div id="edsel" hidden><i></i><i></i><i></i><i></i></div></div></div>
   <div class="edtools">
     <div class="edhint" id="edhint"></div>
     <div class="row">
-      <div class="seg" role="group" aria-label="Alat"><button data-m="mark" class="on"><span data-ico="mark"></span> Tandai</button><button data-m="crop"><span data-ico="crop"></span> Potong</button></div>
+      <div class="seg" role="group" aria-label="Alat"><button data-m="mark" class="on"><span data-ico="mark"></span> Kotak</button><button data-m="pen"><span data-ico="brush"></span> Pena</button><button data-m="crop"><span data-ico="crop"></span> Potong</button></div>
       <span class="sp"></span>
       <button class="ib" id="edrot" data-ico="rotate" title="Putar 90°" aria-label="Putar 90 derajat"></button>
       <button class="ib" id="edundo" data-ico="undo" title="Urungkan" aria-label="Urungkan" disabled></button>
@@ -633,15 +634,15 @@ function packUrl(c, bw){                     // JPEG; untuk hitam-putih pilih PN
   const j = c.toDataURL("image/jpeg", Q_SEND); if (!bw) return j;
   const p = c.toDataURL("image/png"); return p.length < j.length ? p : j;
 }
-function drawMarks(c, marks){                // kotak merah ikut tergambar di gambar yang dikirim
+function drawMarks(c, marks){                // tanda merah ikut tergambar di gambar yang dikirim (kotak: hanya garis, tanpa isian)
   if (!marks || !marks.length) return;
-  const x = c.getContext("2d"), W = c.width, H = c.height, lw = Math.max(2, Math.round(Math.max(W, H) / 330)), multi = marks.length > 1;
-  marks.forEach((m, i) => {
-    const n = norm(m), px = n.x0 * W, py = n.y0 * H, pw = (n.x1 - n.x0) * W, ph = (n.y1 - n.y0) * H;
-    x.fillStyle = "rgba(229,50,45,.10)"; x.fillRect(px, py, pw, ph);
-    x.strokeStyle = "#e5322d"; x.lineWidth = lw; x.strokeRect(px + lw / 2, py + lw / 2, pw - lw, ph - lw);
-    if (multi) { const s = lw * 6; x.fillStyle = "#e5322d"; x.fillRect(px, py, s, s); x.fillStyle = "#fff"; x.font = `700 ${Math.round(s * .75)}px sans-serif`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(String(i + 1), px + s / 2, py + s / 2 + 1); }
+  const x = c.getContext("2d"), W = c.width, H = c.height, lw = Math.max(2, Math.round(Math.max(W, H) / 330));
+  x.save(); x.strokeStyle = x.fillStyle = MARK_RED; x.lineWidth = lw;
+  marks.forEach(m => {
+    if (m.pen) return brush(x, m, W, H);
+    const n = norm(m); x.strokeRect(n.x0 * W + lw / 2, n.y0 * H + lw / 2, (n.x1 - n.x0) * W - lw, (n.y1 - n.y0) * H - lw);
   });
+  x.restore();
 }
 function renderFinal(base, filter, sharp, marks){
   const out = fitMax(base, MAX_SEND); applyFilter(out, filter, sharp / 100); drawMarks(out, marks); return packUrl(out, filter === "bw");
@@ -700,6 +701,43 @@ function prepare(src, bin){                  // perbesar, kontras, balik latar g
   const w = big.width, h = big.height, d = big.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, w, h).data;
   return grayToCanvas(grayPipeline(d, w, h, 1.3, bin), w, h, 30);
 }
+/*CLEAN-START*/
+/* Penyaring hasil OCR: hanya huruf, angka, dan tanda baca biasa. Simbol aneh, ikon, dan bagian gambar dibuang; spasi/tab berlebih jadi satu. */
+const OCR_BAD = /[^\p{L}\p{N}\s.,;:!?'"“”‘’()\[\]{}<>\/\\\-–—_+=*&%$#@~^|•·…°€£¥]/gu;
+const OCR_NEUTRAL = /[()\[\]{}"'“”‘’.,;:!?]/g;
+const OCR_PUNCT_OK = /^(\.{1,3}|…|[,;:]|[!?]{1,3}|["'“”‘’]|[()\[\]]|[-–—]|\/)$/;
+function cleanToken(raw, conf){
+  const t = String(raw || "").replace(OCR_BAD, "");
+  if (!t) return "";
+  const alnum = (t.match(/[\p{L}\p{N}]/gu) || []).length;
+  if (!alnum) return OCR_PUNCT_OK.test(t) ? t : "";                         // tanda baca tunggal yang wajar boleh; sisanya (| ~ __ dll) dibuang
+  const core = t.replace(OCR_NEUTRAL, "").length;
+  if (core >= 3 && alnum / core < .4) return "";                            // kebanyakan simbol, bukan kata
+  if (conf < 20 && (alnum <= 3 || alnum / core < .6)) return "";            // tebakan sangat lemah & pendek: kemungkinan noise
+  return t;
+}
+function cleanLine(l){
+  const lc = l.confidence == null ? 50 : l.confidence;
+  const pairs = l.words && l.words.length ? l.words.map(w => [w.text, w.confidence == null ? lc : w.confidence])
+                                          : String(l.text || "").split(/\s+/).filter(Boolean).map(t => [t, lc]);
+  const out = pairs.map(([t, c]) => cleanToken(t, c)).filter(Boolean).join(" ");
+  const alnum = (out.match(/[\p{L}\p{N}]/gu) || []).length;
+  return !alnum || (lc < 25 && alnum < 4) ? "" : out;
+}
+const ocrNormalize = s => s.replace(/[ \t\u00a0]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+function cleanOCR(data){
+  const paras = [], take = p => { const ls = (p.lines || []).map(cleanLine).filter(Boolean); if (ls.length) paras.push(ls.join("\n")); };
+  if (data.blocks && data.blocks.length) {
+    for (const b of data.blocks) { if (/IMAGE|NOISE|LINE|SEPARATOR/i.test(String(b.blocktype || ""))) continue; (b.paragraphs || []).forEach(take); }   // blok gambar/garis dilewati
+  } else if (data.paragraphs && data.paragraphs.length) data.paragraphs.forEach(take);
+  else if (data.lines && data.lines.length) take({ lines: data.lines });
+  else {                                                                     // hanya teks mentah tersedia
+    const conf = data.confidence == null ? 50 : data.confidence;
+    return ocrNormalize(String(data.text || "").split("\n").map(t => cleanLine({ text: t, confidence: conf })).join("\n"));
+  }
+  return ocrNormalize(paras.join("\n\n"));
+}
+/*CLEAN-END*/
 const hint = conf => conf < 60 ? " Hasil kurang yakin: coba potong ke bagian tulisannya saja, atau pakai filter Jelas / Hitam-putih di Edit gambar." : "";
 async function runOCR(src, btn, opts = {}){   // src: kanvas / data-URL / daftar keduanya (beberapa area dibaca berurutan)
   if (ocrBusy) { status("Masih membaca, tunggu sebentar…"); return { text: "", conf: 0 }; }
@@ -715,8 +753,8 @@ async function runOCR(src, btn, opts = {}){   // src: kanvas / data-URL / daftar
       for (const [k, bin] of [[1, false], [2, true]]) {   // dua percobaan: abu-abu tajam & hitam-putih; ambil yang paling yakin
         ocrLabel = (list.length > 1 ? `Area ${a + 1}/${list.length}, ` : "") + `membaca (percobaan ${k}/2)… `; status(ocrLabel + "0%");
         await new Promise(r => setTimeout(r, 20));
-        const r = await w.recognize(prepare(c, bin));
-        const text = r.data.text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(), cf = r.data.confidence || 0;
+        const r = await w.recognize(prepare(c, bin), {}, { text: true, blocks: true });
+        const text = cleanOCR(r.data), cf = r.data.confidence || 0;
         if (!best || !best.text || (text && cf > best.conf)) best = { text, conf: cf };
       }
       texts.push(best.text); if (best.text) conf = Math.min(conf, best.conf);
@@ -725,7 +763,47 @@ async function runOCR(src, btn, opts = {}){   // src: kanvas / data-URL / daftar
   } catch { status("OCR gagal. Coba gambar yang lebih jelas."); return { text: "", conf: 0 }; }
   finally { ocrBusy = false; btn && (btn.disabled = false); }
 }
-const areasOf = (base, marks) => marks && marks.length ? marks.map(m => cropCanvas(base, norm(m))) : base;
+const MARK_RED = "#e5322d", PEN_W = 0.011, NIB = -Math.PI / 4;     // PEN_W: tebal dasar kuas (pecahan sisi terpanjang gambar)
+const isPen = m => !!m.pen;
+const penBox = m => { let x0 = 1, y0 = 1, x1 = 0, y1 = 0; m.pts.forEach(p => { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }); return { x0, y0, x1, y1 }; };
+function brush(ctx, m, W, H){                   // kuas kaligrafi: ujung miring 45°, tebal mengikuti kecepatan/tekanan, ujung meruncing, jalur dihaluskan (Catmull-Rom)
+  const px = m.pts.map(p => [p[0] * W, p[1] * H, p[2] == null ? .6 : p[2]]), base = Math.max(2.5, m.w * Math.max(W, H));
+  if (px.length < 2) { ctx.beginPath(); ctx.arc(px[0][0], px[0][1], base * .5, 0, 7); ctx.fill(); return; }
+  const step = Math.max(.6, base * .12), d = [];
+  for (let i = 0; i < px.length - 1; i++) {
+    const a = px[Math.max(0, i - 1)], b = px[i], c = px[i + 1], e = px[Math.min(px.length - 1, i + 2)], n = Math.max(1, Math.ceil(Math.hypot(c[0] - b[0], c[1] - b[1]) / step));
+    for (let k = 0; k < n; k++) {
+      const t = k / n, t2 = t * t, t3 = t2 * t, f = (u0, u1, u2, u3) => .5 * (2 * u1 + (-u0 + u2) * t + (2 * u0 - 5 * u1 + 4 * u2 - u3) * t2 + (-u0 + 3 * u1 - 3 * u2 + u3) * t3);
+      d.push([f(a[0], b[0], c[0], e[0]), f(a[1], b[1], c[1], e[1]), b[2] + (c[2] - b[2]) * t]);
+    }
+  }
+  d.push(px[px.length - 1]);
+  const cum = [0]; for (let i = 1; i < d.length; i++) cum.push(cum[i - 1] + Math.hypot(d[i][0] - d[i - 1][0], d[i][1] - d[i - 1][1]));
+  const L = cum[cum.length - 1], tin = Math.min(L * .18, base * 3), tout = Math.min(L * .3, base * 4), ease = t => t * t * (3 - 2 * t);
+  ctx.beginPath();
+  d.forEach((q, i) => {
+    const a = tin > 0 ? Math.min(1, cum[i] / tin) : 1, z = tout > 0 ? Math.min(1, (L - cum[i]) / tout) : 1;
+    const r = base * .5 * (.55 + .7 * q[2]) * (.25 + .75 * ease(a)) * (.2 + .8 * ease(z)), rx = Math.max(.6, r), ry = Math.max(.35, r * .42);
+    ctx.moveTo(q[0] + rx * Math.cos(NIB), q[1] + rx * Math.sin(NIB)); ctx.ellipse(q[0], q[1], rx, ry, NIB, 0, Math.PI * 2);
+  });
+  ctx.fill();
+}
+const overlap = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+function regionsOf(marks, W, H){                 // daerah yang dibaca OCR: kotak apa adanya; coretan pena -> kotak di sekitarnya (yang bertumpuk digabung)
+  const rects = [], pens = [];
+  marks.forEach(m => {
+    if (!isPen(m)) return rects.push(norm(m));
+    const bb = penBox(m), pad = m.w * Math.max(W, H) * 2.2, px = pad / W, py = pad / H;
+    let r = { x0: Math.max(0, bb.x0 - px), y0: Math.max(0, bb.y0 - py), x1: Math.min(1, bb.x1 + px), y1: Math.min(1, bb.y1 + py) };
+    if (r.y1 - r.y0 < .06) { const c = (r.y0 + r.y1) / 2; r.y0 = Math.max(0, c - .03); r.y1 = Math.min(1, c + .03); }
+    if (r.x1 - r.x0 < .06) { const c = (r.x0 + r.x1) / 2; r.x0 = Math.max(0, c - .03); r.x1 = Math.min(1, c + .03); }
+    pens.push(r);
+  });
+  for (let again = true; again;) { again = false; for (let i = 0; i < pens.length && !again; i++) for (let j = i + 1; j < pens.length && !again; j++) if (overlap(pens[i], pens[j])) { const a = pens[i], b = pens[j]; pens[i] = { x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) }; pens.splice(j, 1); again = true; } }
+  pens.sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+  return [...rects, ...pens];
+}
+const areasOf = (base, marks) => marks && marks.length ? regionsOf(marks, base.width, base.height).map(r => cropCanvas(base, r)) : base;
 const ocrTitle = () => $("ocr").title = pic && pic.marks.length ? "Baca teks dari area bertanda" : "Baca teks dari gambar";
 $("ocr").onclick = async () => {
   const ms = pic ? pic.marks : [];
@@ -738,11 +816,12 @@ $("ocr").onclick = async () => {
 let ed = null, sel = null, drag = null, raf = 0;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const norm = s => ({ x0: Math.min(s.x0, s.x1), y0: Math.min(s.y0, s.y1), x1: Math.max(s.x0, s.x1), y1: Math.max(s.y0, s.y1) });
-const cloneMarks = ms => ms.map(m => ({ ...m }));
-const marksAfterRotate = ms => ms.map(m => { const n = norm(m); return { x0: 1 - n.y1, y0: n.x0, x1: 1 - n.y0, y1: n.x1 }; });   // putar 90° searah jarum jam
-function marksAfterCrop(ms, c){
-  const w = c.x1 - c.x0, h = c.y1 - c.y0, out = [];
+const cloneMarks = ms => ms.map(m => m.pen ? { ...m, pts: m.pts.map(p => p.slice()) } : { ...m });
+const marksAfterRotate = ms => ms.map(m => m.pen ? { ...m, pts: m.pts.map(p => [1 - p[1], p[0], p[2]]) } : (n => ({ x0: 1 - n.y1, y0: n.x0, x1: 1 - n.y0, y1: n.x1 }))(norm(m)));   // putar 90° searah jarum jam
+function marksAfterCrop(ms, c, bw, bh){
+  const w = c.x1 - c.x0, h = c.y1 - c.y0, out = [], k = Math.max(bw, bh) / Math.max(w * bw, h * bh);   // k: perbesaran akibat potong (tebal kuas ikut menyesuaikan)
   ms.forEach(m => {
+    if (m.pen) { const bb = penBox(m); if (bb.x1 >= c.x0 && bb.x0 <= c.x1 && bb.y1 >= c.y0 && bb.y0 <= c.y1) out.push({ ...m, w: m.w * k, pts: m.pts.map(p => [(p[0] - c.x0) / w, (p[1] - c.y0) / h, p[2]]) }); return; }
     const n = norm(m), x0 = Math.max(n.x0, c.x0), y0 = Math.max(n.y0, c.y0), x1 = Math.min(n.x1, c.x1), y1 = Math.min(n.y1, c.y1);
     if (x1 - x0 > .02 * w && y1 - y0 > .02 * h) out.push({ x0: (x0 - c.x0) / w, y0: (y0 - c.y0) / h, x1: (x1 - c.x0) / w, y1: (y1 - c.y0) / h });
   });
@@ -766,15 +845,16 @@ function openEditor(){
 }
 function closeEditor(){ $("ed").hidden = true; document.body.style.overflow = ""; ed = null; sel = null; drag = null; status(""); }
 function syncEd(){
-  const m = ed.mode === "mark";
+  const m = ed.mode !== "crop", nreg = ed.marks.length ? regionsOf(ed.marks, ed.base.width, ed.base.height).length : 0;
   document.querySelectorAll("[data-m]").forEach(b => b.classList.toggle("on", b.dataset.m === ed.mode));
   $("edmk").hidden = !m; $("edcp").hidden = m;
   $("edmkdel").disabled = $("edmkclr").disabled = !ed.marks.length;
   $("edcrop").disabled = $("edclr").disabled = !sel;
   $("edundo").disabled = !ed.stack.length;
-  $("edhint").textContent = m ? "Seret di gambar untuk menandai bagian yang mau dibaca (kotak merah). Ketuk kotak untuk memilih, geser tepi atau sudutnya untuk mengubah. Tanda tetap ada setelah Selesai."
-                              : "Seret di gambar untuk memilih bagian yang mau dipotong, lalu tekan Potong.";
-  $("edread").textContent = ed.marks.length ? `Baca ${ed.marks.length} area bertanda` : "Baca seluruh gambar";
+  $("edhint").textContent = { mark: "Kotak: seret untuk menandai bagian yang mau dibaca. Ketuk kotak untuk memilih, geser tepi atau sudutnya untuk mengubah. Tanda tetap ada setelah Selesai.",
+    pen: "Pena: coret atau lingkari bagian yang mau dibaca. Yang dibaca adalah area di sekitar coretan. Tanda tetap ada setelah Selesai.",
+    crop: "Seret di gambar untuk memilih bagian yang mau dipotong, lalu tekan Potong." }[ed.mode];
+  $("edread").textContent = nreg ? `Baca ${nreg} area bertanda` : "Baca seluruh gambar";
   $("eduse").disabled = !$("edtxt").value.trim();
   document.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", b.dataset.f === ed.filter));
   $("edsharp").value = ed.sharp; $("edsharp").disabled = ed.filter === "asli";
@@ -799,9 +879,15 @@ function drawOverlay(){
   if (!ed) return;
   const cv = $("edcv"), W = cv.clientWidth, H = cv.clientHeight, host = $("edmarks");
   host.replaceChildren();
+  const pc = $("edpen");
+  if (pc.width !== cv.width || pc.height !== cv.height) { pc.width = cv.width; pc.height = cv.height; }
+  const pctx = pc.getContext("2d"); pctx.clearRect(0, 0, pc.width, pc.height); pctx.fillStyle = MARK_RED;
+  ed.marks.forEach(m => { if (m.pen) brush(pctx, m, pc.width, pc.height); });
+  const nrect = ed.marks.filter(m => !m.pen).length; let ri = 0;
   ed.marks.forEach((m, i) => {
+    if (m.pen) return;
     const n = norm(m), d = document.createElement("div"), act = ed.mode === "mark" && i === ed.active;
-    d.className = "mk" + (act ? " act" : ""); if (ed.marks.length > 1) d.dataset.n = i + 1;
+    d.className = "mk" + (act ? " act" : ""); ri++; if (nrect > 1) d.dataset.n = ri;
     Object.assign(d.style, { left: n.x0 * W + "px", top: n.y0 * H + "px", width: (n.x1 - n.x0) * W + "px", height: (n.y1 - n.y0) * H + "px" });
     if (act) for (let k = 0; k < 4; k++) d.append(document.createElement("i"));
     host.append(d);
@@ -829,7 +915,13 @@ const putRect = (k, r) => { if (ed.mode === "mark") ed.marks[k] = r; else sel = 
 $("edstage").addEventListener("pointerdown", e => {
   if (!ed) return;
   const p = pt(e), tx = 26 / p.r.width, ty = 26 / p.r.height, rects = ed.mode === "mark" ? ed.marks : (sel ? [sel] : []); drag = null;
-  for (let k = rects.length - 1; k >= 0 && !drag; k--) { const h = hitRect(norm(rects[k]), p, tx, ty); if (h) drag = { ...h, k }; }
+  if (ed.mode === "pen") {
+    ed.marks.push({ pen: 1, w: PEN_W, pts: [[p.x, p.y, .6]] }); ed.active = -1;
+    drag = { pen: true, k: ed.marks.length - 1, t: e.timeStamp };
+    try { $("edstage").setPointerCapture(e.pointerId); } catch {}
+    drawOverlay(); return;
+  }
+  for (let k = rects.length - 1; k >= 0 && !drag; k--) { if (isPen(rects[k])) continue; const h = hitRect(norm(rects[k]), p, tx, ty); if (h) drag = { ...h, k }; }
   if (!drag) {
     const r = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };
     if (ed.mode === "mark") { ed.marks.push(r); drag = { fresh: true, k: ed.marks.length - 1 }; } else { sel = r; drag = { fresh: true, k: 0 }; }
@@ -840,6 +932,18 @@ $("edstage").addEventListener("pointerdown", e => {
 });
 $("edstage").addEventListener("pointermove", e => {
   if (!drag || !ed) return;
+  if (drag.pen) {                                       // goresan: titik dihaluskan, tebal mengikuti kecepatan (atau tekanan pena asli)
+    const m = ed.marks[drag.k], evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of (evs.length ? evs : [e])) {
+      const q = pt(ev), last = m.pts[m.pts.length - 1], dist = Math.hypot((q.x - last[0]) * q.r.width, (q.y - last[1]) * q.r.height);
+      drag.lastQ = q; if (dist < 1.5) continue;
+      const dt = Math.max(1, ev.timeStamp - drag.t); drag.t = ev.timeStamp;
+      let pr = ev.pointerType === "pen" && ev.pressure > 0 ? ev.pressure : clamp(1.15 - (dist / dt) / 1.8, .15, 1);
+      pr = last[2] + (pr - last[2]) * .3;
+      m.pts.push([last[0] + (q.x - last[0]) * .6, last[1] + (q.y - last[1]) * .6, pr]);
+    }
+    drawOverlay(); return;
+  }
   const p = pt(e), cur = getRect(drag.k);
   if (drag.fresh) { cur.x1 = p.x; cur.y1 = p.y; }
   else if (drag.move) {
@@ -851,6 +955,15 @@ $("edstage").addEventListener("pointermove", e => {
 const endDrag = () => {
   if (!drag) return;
   const d = drag; drag = null;
+  if (d.pen) {
+    if (ed) {
+      const m = ed.marks[d.k], cv = $("edcv"); if (d.lastQ) m.pts.push([d.lastQ.x, d.lastQ.y, m.pts[m.pts.length - 1][2]]);
+      let len = 0; for (let i = 1; i < m.pts.length; i++) len += Math.hypot((m.pts[i][0] - m.pts[i - 1][0]) * cv.clientWidth, (m.pts[i][1] - m.pts[i - 1][1]) * cv.clientHeight);
+      if (len < 8) ed.marks.splice(d.k, 1);             // sentuhan tak sengaja
+      drawOverlay(); syncEd();
+    }
+    return;
+  }
   if (ed) {
     const r = getRect(d.k), n = r && norm(r);
     if (n && d.fresh && (n.x1 - n.x0 < .02 || n.y1 - n.y0 < .02)) { if (ed.mode === "mark") { ed.marks.splice(d.k, 1); ed.active = -1; } else sel = null; }
@@ -865,7 +978,7 @@ document.addEventListener("keydown", e => e.key === "Escape" && ed && closeEdito
 $("edit").onclick = $("prev").onclick = openEditor;
 document.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { ed.mode = b.dataset.m; sel = null; ed.active = -1; syncEd(); drawOverlay(); });
 $("edrot").onclick = () => setBase(rotated(ed.base), marksAfterRotate(ed.marks));
-$("edcrop").onclick = () => { const n = norm(sel); setBase(cropCanvas(ed.base, n), marksAfterCrop(ed.marks, n)); };
+$("edcrop").onclick = () => { const n = norm(sel); setBase(cropCanvas(ed.base, n), marksAfterCrop(ed.marks, n, ed.base.width, ed.base.height)); };
 $("edclr").onclick = () => { sel = null; drawOverlay(); syncEd(); };
 $("edmkdel").onclick = () => { if (!ed.marks.length) return; ed.marks.splice(ed.active >= 0 ? ed.active : ed.marks.length - 1, 1); ed.active = -1; drawOverlay(); syncEd(); };
 $("edmkclr").onclick = () => { ed.marks = []; ed.active = -1; drawOverlay(); syncEd(); };
@@ -1125,7 +1238,8 @@ const ICON = {
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>',
   reset: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
   crop: '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>',
-  mark: '<rect x="4" y="5" width="16" height="14" rx="2"/>'
+  mark: '<rect x="4" y="5" width="16" height="14" rx="2"/>',
+  brush: '<path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/>'
 };
 const ico = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[n] + '</svg>';
 document.querySelectorAll("[data-ico]").forEach(b => b.innerHTML = ico(b.dataset.ico));
